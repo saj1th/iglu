@@ -24,6 +24,7 @@ import com.snowplowanalytics.iglu.schemaddl.StringUtils._
  * Module containing functions for data type suggestions
  */
 object TypeSuggestions {
+
   /**
    * Type alias for function suggesting an encode type based on map of
    * JSON Schema properties
@@ -37,7 +38,7 @@ object TypeSuggestions {
         val longest = excludeNull(enums).map(_.length).max
         Some(RedshiftVarchar(longest))
       case _ => None
-    }
+  }
 
   // Suggest VARCHAR(4096) for all product types. Should be in the beginning
   val productSuggestion: DataTypeSuggestion = (properties, columnName) =>
@@ -45,28 +46,28 @@ object TypeSuggestions {
       case (Some(types)) if excludeNull(types).size > 1 =>
         Some(ProductType(List(s"Product type $types encountered in $columnName")))
       case _ => None
-    }
+  }
 
   val timestampSuggestion: DataTypeSuggestion = (properties, columnName) =>
     (properties.get("type"), properties.get("format")) match {
       case (Some(types), Some("date-time")) if types.contains("string") =>
         Some(RedshiftTimestamp)
       case _ => None
-    }
+  }
 
   val dateSuggestion: DataTypeSuggestion = (properties, columnName) =>
     (properties.get("type"), properties.get("format")) match {
-      case(Some(types), Some("date")) if types.contains("string") =>
+      case (Some(types), Some("date")) if types.contains("string") =>
         Some(RedshiftDate)
       case _ => None
-    }
+  }
 
   val arraySuggestion: DataTypeSuggestion = (properties, columnName) =>
     properties.get("type") match {
       case Some(types) if types.contains("array") =>
         Some(RedshiftVarchar(5000))
       case _ => None
-    }
+  }
 
   val numberSuggestion: DataTypeSuggestion = (properties, columnName) =>
     (properties.get("type"), properties.get("multipleOf")) match {
@@ -75,20 +76,31 @@ object TypeSuggestions {
       case (Some(types), _) if types.contains("number") =>
         Some(RedshiftDouble)
       case _ => None
-    }
+  }
 
   val integerSuggestion: DataTypeSuggestion = (properties, columnName) => {
-    (properties.get("type"), properties.get("maximum"), properties.get("enum"), properties.get("multipleOf")) match {
+    (
+      properties.get("type"),
+      properties.get("maximum"),
+      properties.get("enum"),
+      properties.get("multipleOf")) match {
       case (Some(types), Some(maximum), _, _) if excludeNull(types) == Set("integer") =>
         getIntSize(maximum)
       // Contains only enum
-      case (types, _, Some(enum), _) if (types.isEmpty || excludeNull(types.get) == Set("integer")) && isIntegerList(enum) =>
-        val max = enum.split(",").toList.map(el => try Some(el.toLong) catch { case e: NumberFormatException => None } )
+      case (types, _, Some(enum), _)
+          if (types.isEmpty || excludeNull(types.get) == Set("integer")) && isIntegerList(enum) =>
+        val max = enum
+          .split(",")
+          .toList
+          .map(el =>
+            try Some(el.toLong)
+            catch { case e: NumberFormatException => None })
         val maxLong = max.sequence.getOrElse(Nil).maximum
-        maxLong.flatMap(m => getIntSize(m))   // This will short-circuit integer suggestions on any non-integer enum
+        maxLong.flatMap(m => getIntSize(m)) // This will short-circuit integer suggestions on any non-integer enum
       case (Some(types), _, _, _) if excludeNull(types) == Set("integer") =>
         Some(RedshiftBigInt)
-      case (Some(types), max, _, Some(multipleOf)) if types.contains("number") && multipleOf == "1" =>
+      case (Some(types), max, _, Some(multipleOf))
+          if types.contains("number") && multipleOf == "1" =>
         max.flatMap(m => getIntSize(m)).orElse(Some(RedshiftInteger))
       case _ => None
     }
@@ -97,7 +109,7 @@ object TypeSuggestions {
   val charSuggestion: DataTypeSuggestion = (properties, columnName) => {
     (properties.get("type"), properties.get("minLength"), properties.get("maxLength")) match {
       case (Some(types), Some(IntegerAsString(minLength)), Some(IntegerAsString(maxLength)))
-        if minLength == maxLength && excludeNull(types) == Set("string") =>
+          if minLength == maxLength && excludeNull(types) == Set("string") =>
         Some(RedshiftChar(maxLength))
       case _ => None
     }
@@ -106,7 +118,7 @@ object TypeSuggestions {
   val booleanSuggestion: DataTypeSuggestion = (properties, columnName) => {
     properties.get("type") match {
       case Some(types) if excludeNull(types) == Set("boolean") => Some(RedshiftBoolean)
-      case _ => None
+      case _                                                   => None
     }
   }
 
@@ -119,18 +131,23 @@ object TypeSuggestions {
   }
 
   val varcharSuggestion: DataTypeSuggestion = (properties, columnName) => {
-    (properties.get("type"), properties.get("maxLength"), properties.get("enum"), properties.get("format")) match {
-      case (Some(types),     _,                           _,                      Some("ipv6")) if types.contains("string") =>
+    (
+      properties.get("type"),
+      properties.get("maxLength"),
+      properties.get("enum"),
+      properties.get("format")) match {
+      case (Some(types), _, _, Some("ipv6")) if types.contains("string") =>
         Some(RedshiftVarchar(39))
-      case (Some(types),     _,                           _,                      Some("ipv4")) if types.contains("string") =>
+      case (Some(types), _, _, Some("ipv4")) if types.contains("string") =>
         Some(RedshiftVarchar(15))
-      case (Some(types),     _,                           _,                      Some("email")) if types.contains("string") =>
+      case (Some(types), _, _, Some("email")) if types.contains("string") =>
         Some(RedshiftVarchar(255))
-      case (Some(types),     Some(IntegerAsString(maxLength)), _,              _) if types.contains("string") =>
+      case (Some(types), Some(IntegerAsString(maxLength)), _, _) if types.contains("string") =>
         Some(RedshiftVarchar(maxLength))
-      case (_,              _,                            Some(enum),             _) => {
+      case (_, _, Some(enum), _) => {
         val enumItems = enum.split(",")
-        val maxLength = enumItems.toList.reduceLeft((a, b) => if (a.length > b.length) a else b).length
+        val maxLength =
+          enumItems.toList.reduceLeft((a, b) => if (a.length > b.length) a else b).length
         if (enumItems.length == 1) {
           Some(RedshiftChar(maxLength))
         } else {
@@ -181,14 +198,15 @@ object TypeSuggestions {
    */
   private def isComplexEnum(enum: String) = {
     // Predicates
-    def isNumeric(s: String) = try {
-      s.toDouble
-      true
-    } catch {
-      case e: NumberFormatException => false
-    }
+    def isNumeric(s: String) =
+      try {
+        s.toDouble
+        true
+      } catch {
+        case e: NumberFormatException => false
+      }
     def isNonNumeric(s: String) = !isNumeric(s)
-    def isBoolean(s: String) = s == "true" || s == "false"
+    def isBoolean(s: String)    = s == "true" || s == "false"
 
     val nonNullEnum = excludeNull(enum)
     somePredicates(nonNullEnum, List(isNumeric _, isNonNumeric _, isBoolean _), 2)
@@ -201,12 +219,16 @@ object TypeSuggestions {
    * @param predicates list of predicates to check
    * @param quantity required quantity
    */
-  private def somePredicates(instances: Set[String], predicates: List[String => Boolean], quantity: Int): Boolean = {
+  private def somePredicates(
+    instances: Set[String],
+    predicates: List[String => Boolean],
+    quantity: Int): Boolean = {
     if (quantity == 0) true
-    else predicates match {
-      case Nil => false
-      case h :: tail if instances.exists(h) => somePredicates(instances, tail, quantity - 1)
-      case _ :: tail => somePredicates(instances, tail, quantity)
-    }
+    else
+      predicates match {
+        case Nil                              => false
+        case h :: tail if instances.exists(h) => somePredicates(instances, tail, quantity - 1)
+        case _ :: tail                        => somePredicates(instances, tail, quantity)
+      }
   }
 }

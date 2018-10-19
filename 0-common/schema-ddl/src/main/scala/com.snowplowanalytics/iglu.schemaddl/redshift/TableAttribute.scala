@@ -24,9 +24,9 @@ import scalaz.NonEmptyList
 sealed trait TableAttribute extends Ddl
 
 sealed trait DiststyleValue extends Ddl
-case object Even extends DiststyleValue { def toDdl = "EVEN" }
-case object Key extends DiststyleValue { def toDdl = "KEY" }
-case object All extends DiststyleValue { def toDdl = "ALL" }
+case object Even            extends DiststyleValue { def toDdl = "EVEN" }
+case object Key             extends DiststyleValue { def toDdl = "KEY" }
+case object All             extends DiststyleValue { def toDdl = "ALL" }
 
 sealed trait Sortstyle extends Ddl
 
@@ -48,6 +48,8 @@ case class DistKeyTable(columnName: String) extends TableAttribute {
 }
 
 // Don't confuse with redshift.SortKey which is applicable for columns
-case class SortKeyTable(sortstyle: Option[Sortstyle], columns: NonEmptyList[String]) extends TableAttribute {
-  def toDdl = sortstyle.map(_.toDdl + " ").getOrElse("") + "SORTKEY (" + columns.list.mkString(",") + ")"
+case class SortKeyTable(sortstyle: Option[Sortstyle], columns: NonEmptyList[String])
+    extends TableAttribute {
+  def toDdl =
+    sortstyle.map(_.toDdl + " ").getOrElse("") + "SORTKEY (" + columns.list.mkString(",") + ")"
 }

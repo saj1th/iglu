@@ -19,11 +19,11 @@ import org.json4s.jackson.JsonMethods.parse
 // specs2
 import org.specs2.Specification
 
-
 import ObjectProperties._
 import json4s.implicits._
 
-class ObjectSpec extends Specification { def is = s2"""
+class ObjectSpec extends Specification {
+  def is = s2"""
   Check JSON Schema object specification
     parse object with empty properties $e1
     parse object with one property $e2
@@ -33,21 +33,20 @@ class ObjectSpec extends Specification { def is = s2"""
 
   def e1 = {
 
-    val schema = parse(
-      """
+    val schema = parse("""
         |{
         |  "properties": {
         |  }
         |}
       """.stripMargin)
 
-    Schema.parse(schema) must beSome(Schema(properties = Some(Properties(Map.empty[String, Schema]))))
+    Schema.parse(schema) must beSome(
+      Schema(properties = Some(Properties(Map.empty[String, Schema]))))
   }
 
   def e2 = {
 
-    val schema = parse(
-      """
+    val schema = parse("""
         |{
         |  "properties": {
         |    "key": {}
@@ -58,11 +57,9 @@ class ObjectSpec extends Specification { def is = s2"""
     Schema.parse(schema) must beSome(Schema(properties = Some(Properties(Map("key" -> Schema())))))
   }
 
-
   def e3 = {
 
-    val schema = parse(
-      """
+    val schema = parse("""
         |{
         |  "properties": {
         |    "innerKey": {
@@ -72,12 +69,12 @@ class ObjectSpec extends Specification { def is = s2"""
         |}
       """.stripMargin)
 
-    Schema.parse(schema) must beSome(Schema(properties = Some(Properties(Map("innerKey" -> Schema(minLength = Some(StringProperties.MinLength(32))))))))
+    Schema.parse(schema) must beSome(Schema(properties =
+      Some(Properties(Map("innerKey" -> Schema(minLength = Some(StringProperties.MinLength(32))))))))
   }
 
   def e4 = {
-    val schema = parse(
-      """
+    val schema = parse("""
         |{
         |  "required": ["one", "key", "23"]
         |}

@@ -31,7 +31,7 @@ case class PrimaryKeyTable(columns: NonEmptyList[String]) extends TableConstrain
   def toDdl = s"PRIMARY KEY (${columns.list.map(_.mkString(", "))})"
 }
 
-case class ForeignKeyTable(columns: NonEmptyList[String], reftable: RefTable) extends TableConstraint {
+case class ForeignKeyTable(columns: NonEmptyList[String], reftable: RefTable)
+    extends TableConstraint {
   def toDdl = s"FOREIGN KEY (${columns.list.mkString(",")}) ${reftable.toDdl}"
 }
-

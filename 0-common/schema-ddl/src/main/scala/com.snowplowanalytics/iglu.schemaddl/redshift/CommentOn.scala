@@ -22,5 +22,5 @@ package com.snowplowanalytics.iglu.schemaddl.redshift
  */
 case class CommentOn(tableName: String, comment: String) extends Statement {
   override val separator = ";"
-  def toDdl = s"COMMENT ON TABLE $tableName IS '$comment'"
+  def toDdl              = s"COMMENT ON TABLE $tableName IS '$comment'"
 }

@@ -20,7 +20,7 @@ import scalaz._
 import Scalaz._
 
 // Iglu Core
-import com.snowplowanalytics.iglu.core.{ SchemaMap, SchemaVer }
+import com.snowplowanalytics.iglu.core.{SchemaMap, SchemaVer}
 import com.snowplowanalytics.iglu.core.SelfDescribingSchema
 
 // specs2
@@ -32,15 +32,15 @@ import org.json4s.jackson.JsonMethods.parse
 // This library
 import Migration._
 
-class MigrationSpec extends Specification { def is = s2"""
+class MigrationSpec extends Specification {
+  def is = s2"""
   Check common Schema migrations
     create correct addition migration from 1-0-0 to 1-0-1 $e1
     create correct addition migrations from 1-0-0 to 1-0-2 $e2
   """
 
   def e1 = {
-    val initial = parse(
-      """
+    val initial = parse("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -51,10 +51,11 @@ class MigrationSpec extends Specification { def is = s2"""
         |  "additionalProperties": false
         |}
       """.stripMargin)
-    val initialSchema = SelfDescribingSchema(SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1,0,0)), initial)
+    val initialSchema = SelfDescribingSchema(
+      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1, 0, 0)),
+      initial)
 
-    val second = parse(
-      """
+    val second = parse("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -69,29 +70,32 @@ class MigrationSpec extends Specification { def is = s2"""
         |  "additionalProperties": false
         |}
       """.stripMargin)
-    val secondSchema = SelfDescribingSchema(SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1,0,1)), second)
+    val secondSchema = SelfDescribingSchema(
+      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1, 0, 1)),
+      second)
 
-    val migrations = Success(List(
-      Migration(
-        "com.acme",
-        "example",
-        SchemaVer.Full(1,0,0),
-        SchemaVer.Full(1,0,1),
-        SchemaDiff(
-          ListMap("bar" -> Map("type" -> "integer", "maximum" -> "4000")),
-          ListMap.empty[String, Map[String, String]],
-          Set.empty))))
+    val migrations = Success(
+      List(
+        Migration(
+          "com.acme",
+          "example",
+          SchemaVer.Full(1, 0, 0),
+          SchemaVer.Full(1, 0, 1),
+          SchemaDiff(
+            ListMap("bar" -> Map("type" -> "integer", "maximum" -> "4000")),
+            ListMap.empty[String, Map[String, String]],
+            Set.empty)
+        )))
 
     val migrationMap = Map(
-      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1,0,0)) -> migrations
+      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1, 0, 0)) -> migrations
     )
 
     Migration.buildMigrationMap(List(secondSchema, initialSchema)) must beEqualTo(migrationMap)
   }
 
   def e2 = {
-    val initial = parse(
-      """
+    val initial = parse("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -102,10 +106,11 @@ class MigrationSpec extends Specification { def is = s2"""
         |  "additionalProperties": false
         |}
       """.stripMargin)
-    val initialSchema = SelfDescribingSchema(SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1,0,0)), initial)
+    val initialSchema = SelfDescribingSchema(
+      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1, 0, 0)),
+      initial)
 
-    val second = parse(
-      """
+    val second = parse("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -120,10 +125,11 @@ class MigrationSpec extends Specification { def is = s2"""
         |  "additionalProperties": false
         |}
       """.stripMargin)
-    val secondSchema = SelfDescribingSchema(SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1,0,1)), second)
+    val secondSchema = SelfDescribingSchema(
+      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1, 0, 1)),
+      second)
 
-    val third = parse(
-      """
+    val third = parse("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -141,45 +147,56 @@ class MigrationSpec extends Specification { def is = s2"""
         |  "additionalProperties": false
         |}
       """.stripMargin)
-    val thirdSchema = SelfDescribingSchema(SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1,0,2)), third)
+    val thirdSchema = SelfDescribingSchema(
+      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1, 0, 2)),
+      third)
 
-    val migrations1 = Success(List(
-      Migration(
-        "com.acme",
-        "example",
-        SchemaVer.Full(1,0,0),
-        SchemaVer.Full(1,0,2),
-        SchemaDiff(
-          ListMap("bar" -> Map("type" -> "integer", "maximum" -> "4000"), "baz" -> Map("type" -> "array")),
-          ListMap.empty[String, Map[String, String]],
-          Set.empty)),
-      Migration(
-        "com.acme",
-        "example",
-        SchemaVer.Full(1,0,0),
-        SchemaVer.Full(1,0,1),
-        SchemaDiff(
-          ListMap("bar" -> Map("type" -> "integer", "maximum" -> "4000")),
-          ListMap.empty[String, Map[String, String]],
-          Set.empty))))
+    val migrations1 = Success(
+      List(
+        Migration(
+          "com.acme",
+          "example",
+          SchemaVer.Full(1, 0, 0),
+          SchemaVer.Full(1, 0, 2),
+          SchemaDiff(
+            ListMap(
+              "bar" -> Map("type" -> "integer", "maximum" -> "4000"),
+              "baz" -> Map("type" -> "array")),
+            ListMap.empty[String, Map[String, String]],
+            Set.empty)
+        ),
+        Migration(
+          "com.acme",
+          "example",
+          SchemaVer.Full(1, 0, 0),
+          SchemaVer.Full(1, 0, 1),
+          SchemaDiff(
+            ListMap("bar" -> Map("type" -> "integer", "maximum" -> "4000")),
+            ListMap.empty[String, Map[String, String]],
+            Set.empty)
+        )
+      ))
 
-    val migrations2 = Success(List(
-      Migration(
-        "com.acme",
-        "example",
-        SchemaVer.Full(1,0,1),
-        SchemaVer.Full(1,0,2),
-        SchemaDiff(
-          ListMap("baz" -> Map("type" -> "array")),
-          ListMap.empty[String, Map[String, String]],
-          Set.empty))
-    ))
+    val migrations2 = Success(
+      List(
+        Migration(
+          "com.acme",
+          "example",
+          SchemaVer.Full(1, 0, 1),
+          SchemaVer.Full(1, 0, 2),
+          SchemaDiff(
+            ListMap("baz" -> Map("type" -> "array")),
+            ListMap.empty[String, Map[String, String]],
+            Set.empty)
+        )
+      ))
 
     val migrationMap = Map(
-      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1,0,1)) -> migrations2,
-      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1,0,0)) -> migrations1
+      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1, 0, 1)) -> migrations2,
+      SchemaMap("com.acme", "example", "jsonschema", SchemaVer.Full(1, 0, 0)) -> migrations1
     )
 
-    Migration.buildMigrationMap(List(secondSchema, thirdSchema, initialSchema)) must beEqualTo(migrationMap)
+    Migration.buildMigrationMap(List(secondSchema, thirdSchema, initialSchema)) must beEqualTo(
+      migrationMap)
   }
 }

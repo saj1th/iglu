@@ -40,26 +40,29 @@ object MigrationGenerator {
    * @return DDL file containing list of statements ready to be printed
    */
   def generateMigration(
-      migration: Migration,
-      varcharSize: Int = 4096,
-      tableSchema: Option[String] = Some("atomic"))
-  : DdlFile = {
+    migration: Migration,
+    varcharSize: Int = 4096,
+    tableSchema: Option[String] = Some("atomic")): DdlFile = {
 
-    val schemaKey     = SchemaMap(migration.vendor, migration.name, "jsonschema", migration.to)
-    val oldSchemaUri  = SchemaMap(migration.vendor, migration.name, "jsonschema", migration.from).toSchemaUri
-    val tableName     = getTableName(schemaKey)                            // e.g. com_acme_event_1
-    val tableNameFull = tableSchema.map(_ + ".").getOrElse("") + tableName   // e.g. atomic.com_acme_event_1
+    val schemaKey = SchemaMap(migration.vendor, migration.name, "jsonschema", migration.to)
+    val oldSchemaUri =
+      SchemaMap(migration.vendor, migration.name, "jsonschema", migration.from).toSchemaUri
+    val tableName = getTableName(schemaKey) // e.g. com_acme_event_1
+    val tableNameFull = tableSchema
+      .map(_ + ".")
+      .getOrElse("") + tableName // e.g. atomic.com_acme_event_1
 
     val transaction =
       if (migration.diff.added.nonEmpty) {
-      migration.diff.added.map(buildAlterTable(tableNameFull, varcharSize))
-    } else {
-      List(CommentBlock("NO ADDED COLUMNS CAN BE EXPRESSED IN SQL MIGRATION", 3))
-    }
+        migration.diff.added.map(buildAlterTable(tableNameFull, varcharSize))
+      } else {
+        List(CommentBlock("NO ADDED COLUMNS CAN BE EXPRESSED IN SQL MIGRATION", 3))
+      }
 
-    val header = getHeader(tableName, oldSchemaUri)
+    val header  = getHeader(tableName, oldSchemaUri)
     val comment = CommentOn(tableNameFull, schemaKey.toSchemaUri)
-    DdlFile(List(header, Empty, Begin(None, None), Empty) ++ transaction :+ Empty :+ comment :+ Empty :+ End)
+    DdlFile(
+      List(header, Empty, Begin(None, None), Empty) ++ transaction :+ Empty :+ comment :+ Empty :+ End)
   }
 
   /**
@@ -71,14 +74,16 @@ object MigrationGenerator {
    * @return DDL statement with header
    */
   def getHeader(tableName: String, oldSchemaUri: String): CommentBlock =
-    CommentBlock(Vector(
-      "WARNING: only apply this file to your database if the following SQL returns the expected:",
-      "",
-      s"SELECT pg_catalog.obj_description(c.oid) FROM pg_catalog.pg_class c WHERE c.relname = '$tableName';",
-      " obj_description",
-      "-----------------",
-      s" $oldSchemaUri",
-      " (1 row)"))
+    CommentBlock(
+      Vector(
+        "WARNING: only apply this file to your database if the following SQL returns the expected:",
+        "",
+        s"SELECT pg_catalog.obj_description(c.oid) FROM pg_catalog.pg_class c WHERE c.relname = '$tableName';",
+        " obj_description",
+        "-----------------",
+        s" $oldSchemaUri",
+        " (1 row)"
+      ))
 
   /**
    * Generate single ALTER TABLE statement for some new property
@@ -89,8 +94,8 @@ object MigrationGenerator {
    *             length, maximum, etc
    * @return DDL statement altering single column in table
    */
-  def buildAlterTable(tableName: String, varcharSize: Int)
-                     (pair: (String, Map[String, String])): AlterTable =
+  def buildAlterTable(tableName: String, varcharSize: Int)(
+    pair: (String, Map[String, String])): AlterTable =
     pair match {
       case (columnName, properties) =>
         val dataType = getDataType(properties, varcharSize, columnName)
@@ -98,6 +103,8 @@ object MigrationGenerator {
         val nullable =
           if (checkNullability(properties, required = false)) None
           else Some(Nullability(NotNull))
-        AlterTable(tableName, AddColumn(snakeCase(columnName), dataType, None, Some(encoding), nullable))
+        AlterTable(
+          tableName,
+          AddColumn(snakeCase(columnName), dataType, None, Some(encoding), nullable))
     }
 }

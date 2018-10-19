@@ -14,5 +14,5 @@ package com.snowplowanalytics.iglu.schemaddl.redshift
 
 case object Empty extends Statement {
   override val separator = ""
-  def toDdl = ""
+  def toDdl              = ""
 }

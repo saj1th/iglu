@@ -25,40 +25,44 @@ import CastError._
 sealed trait Row extends Product with Serializable
 
 object Row {
-  case object Null extends Row
-  final case class Primitive(value: Any) extends Row
-  final case class Repeated(values: List[Row]) extends Row
+  case object Null                                     extends Row
+  final case class Primitive(value: Any)               extends Row
+  final case class Repeated(values: List[Row])         extends Row
   final case class Record(fields: List[(String, Row)]) extends Row
 
   /**
-    * Turn JSON  value into BigQuery-compatible row, matching schema defined in `field`
-    * Top-level function, called only one columns
-    * Performs following operations in order to prevent runtime insert failure:
-    * * removes unexpected additional properties
-    * * turns all unexpected types into string
-    */
+   * Turn JSON  value into BigQuery-compatible row, matching schema defined in `field`
+   * Top-level function, called only one columns
+   * Performs following operations in order to prevent runtime insert failure:
+   * * removes unexpected additional properties
+   * * turns all unexpected types into string
+   */
   def cast(field: Field)(value: Json): CastResult =
     field match {
       case Field(_, fieldType, Mode.Repeated) => castRepeated(fieldType, value)
-      case Field(_, fieldType, mode) => castValue(fieldType)(value).recover(mode)
+      case Field(_, fieldType, mode)          => castValue(fieldType)(value).recover(mode)
     }
 
   /**
-    * Turn primitive JSON or JSON object into BigQuery row
-    * Does *not* handle arrays (as doesn't know about mode) and will turn them into string if meets
-    */
+   * Turn primitive JSON or JSON object into BigQuery row
+   * Does *not* handle arrays (as doesn't know about mode) and will turn them into string if meets
+   */
   def castValue(fieldType: Type)(value: Json): CastResult = {
     fieldType match {
       case Type.String if value == Json.Null =>
         value.asString.fold(WrongType(value, fieldType).invalidNel[Row])(Primitive(_).validNel)
-      case Type.String =>   // Fallback strategy for union types
+      case Type.String => // Fallback strategy for union types
         value.asString.fold(Primitive(value.noSpaces))(Primitive(_)).validNel
       case Type.Boolean =>
         value.asBoolean.fold(WrongType(value, fieldType).invalidNel[Row])(Primitive(_).validNel)
       case Type.Integer =>
-        value.asNumber.flatMap(_.toLong).fold(WrongType(value, fieldType).invalidNel[Row])(Primitive(_).validNel)
+        value.asNumber
+          .flatMap(_.toLong)
+          .fold(WrongType(value, fieldType).invalidNel[Row])(Primitive(_).validNel)
       case Type.Float =>
-        value.asNumber.flatMap(_.toBigDecimal.map(_.bigDecimal)).fold(WrongType(value, fieldType).invalidNel[Row])(Primitive(_).validNel)
+        value.asNumber
+          .flatMap(_.toBigDecimal.map(_.bigDecimal))
+          .fold(WrongType(value, fieldType).invalidNel[Row])(Primitive(_).validNel)
       case Type.Timestamp =>
         value.asString.fold(WrongType(value, fieldType).invalidNel[Row])(Primitive(_).validNel)
       case Type.Date =>
@@ -66,14 +70,14 @@ object Row {
       case Type.DateTime =>
         value.asString.fold(WrongType(value, fieldType).invalidNel[Row])(Primitive(_).validNel)
       case Type.Record(subfields) =>
-        value
-          .asObject
+        value.asObject
           .fold(WrongType(value, fieldType).invalidNel[Map[String, Json]])(_.toMap.validNel)
           .andThen(castObject(subfields))
     }
   }
 
   private implicit class Recover(val value: CastResult) extends AnyVal {
+
     /** If cast failed, but value is null and column is nullable - fallback to null */
     def recover(mode: Mode): CastResult = value match {
       case Validated.Invalid(NonEmptyList(e @ WrongType(Json.Null, _), Nil)) =>
@@ -82,7 +86,7 @@ object Row {
     }
     def eraseNull: Option[CastResult] = value match {
       case Validated.Invalid(NonEmptyList(WrongType(Json.Null, _), Nil)) => None
-      case other => Some(other)
+      case other                                                         => Some(other)
     }
   }
 
@@ -92,17 +96,18 @@ object Row {
       case f @ Field(name, fieldType, Mode.Repeated) =>
         jsonObject.get(name) match {
           case Some(json) => castRepeated(fieldType, json).map { (f.normalName, _) }
-          case None => (f.normalName, Row.Null).validNel[CastError]
+          case None       => (f.normalName, Row.Null).validNel[CastError]
         }
       case f @ Field(name, fieldType, Mode.Nullable) =>
         jsonObject.get(name) match {
-          case Some(value) => castValue(fieldType)(value).recover(Mode.Nullable).map { (f.normalName, _) }
+          case Some(value) =>
+            castValue(fieldType)(value).recover(Mode.Nullable).map { (f.normalName, _) }
           case None => (f.normalName, Null).validNel
         }
       case f @ Field(name, fieldType, Mode.Required) =>
         jsonObject.get(name) match {
           case Some(value) => castValue(fieldType)(value).map { (f.normalName, _) }
-          case None => MissingInValue(name, Json.fromFields(jsonObject)).invalidNel
+          case None        => MissingInValue(name, Json.fromFields(jsonObject)).invalidNel
         }
     }
 
@@ -114,11 +119,11 @@ object Row {
   /** Try to cast JSON into a list of `fieldType`, fail if JSON is not an array */
   def castRepeated(fieldType: Type, json: Json): CastResult =
     json.asArray match {
-      case Some(values) => values
-        .toList
-        .flatMap(castValue(fieldType)(_).eraseNull)
-        .sequence[ValidatedNel[CastError, ?], Row]
-        .map(Repeated.apply)
+      case Some(values) =>
+        values.toList
+          .flatMap(castValue(fieldType)(_).eraseNull)
+          .sequence[ValidatedNel[CastError, ?], Row]
+          .map(Repeated.apply)
       case None =>
         NotAnArray(json, fieldType).invalidNel
     }

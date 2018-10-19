@@ -21,42 +21,45 @@ import jsonschema.NumberProperties._
 
 object NumberSerializers {
 
-  object MultipleOfSerializer extends CustomSerializer[MultipleOf](_ => (
-    {
-      case JInt(value)    => IntegerMultipleOf(value)
-      case JDouble(value) => NumberMultipleOf(value)
-      case x => throw new MappingException(x + " isn't numeric value")
-    },
+  object MultipleOfSerializer
+      extends CustomSerializer[MultipleOf](
+        _ =>
+          (
+            {
+              case JInt(value)    => IntegerMultipleOf(value)
+              case JDouble(value) => NumberMultipleOf(value)
+              case x              => throw new MappingException(x + " isn't numeric value")
+            }, {
+              case NumberMultipleOf(value)  => JDouble(value.toDouble)
+              case IntegerMultipleOf(value) => JInt(value)
+            }
+        ))
 
-    {
-      case NumberMultipleOf(value)  => JDouble(value.toDouble)
-      case IntegerMultipleOf(value) => JInt(value)
-    }
-    ))
+  object MaximumSerializer
+      extends CustomSerializer[Maximum](
+        _ =>
+          (
+            {
+              case JInt(value)    => IntegerMaximum(value)
+              case JDouble(value) => NumberMaximum(value)
+              case x              => throw new MappingException(x + " isn't numeric value")
+            }, {
+              case NumberMaximum(value)  => JDouble(value.toDouble)
+              case IntegerMaximum(value) => JInt(value)
+            }
+        ))
 
-  object MaximumSerializer extends CustomSerializer[Maximum](_ => (
-    {
-      case JInt(value)    => IntegerMaximum(value)
-      case JDouble(value) => NumberMaximum(value)
-      case x => throw new MappingException(x + " isn't numeric value")
-    },
-
-    {
-      case NumberMaximum(value) => JDouble(value.toDouble)
-      case IntegerMaximum(value)   => JInt(value)
-    }
-    ))
-
-  object MinimumSerializer extends CustomSerializer[Minimum](_ => (
-    {
-      case JInt(value)    => IntegerMinimum(value)
-      case JDouble(value) => NumberMinimum(value)
-      case x => throw new MappingException(x + " isn't numeric value")
-    },
-
-    {
-      case NumberMinimum(value)  => JDouble(value.toDouble)
-      case IntegerMinimum(value) => JInt(value)
-    }
-    ))
+  object MinimumSerializer
+      extends CustomSerializer[Minimum](
+        _ =>
+          (
+            {
+              case JInt(value)    => IntegerMinimum(value)
+              case JDouble(value) => NumberMinimum(value)
+              case x              => throw new MappingException(x + " isn't numeric value")
+            }, {
+              case NumberMinimum(value)  => JDouble(value.toDouble)
+              case IntegerMinimum(value) => JInt(value)
+            }
+        ))
 }

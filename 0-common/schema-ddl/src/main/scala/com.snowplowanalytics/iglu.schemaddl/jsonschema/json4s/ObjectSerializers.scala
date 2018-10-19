@@ -23,12 +23,13 @@ import org.json4s._
 import jsonschema.Schema
 import jsonschema.ObjectProperties._
 
-
 object ObjectSerializers {
   import ArraySerializers._
   import implicits._
 
-  @tailrec private def allString(keys: List[JValue], acc: List[String] = Nil): Option[List[String]] = {
+  @tailrec private def allString(
+    keys: List[JValue],
+    acc: List[String] = Nil): Option[List[String]] = {
     keys match {
       case Nil             => Some(acc.reverse)
       case JString(h) :: t => allString(t, h :: acc)
@@ -36,67 +37,74 @@ object ObjectSerializers {
     }
   }
 
-  object PropertiesSerializer extends CustomSerializer[Properties](_ => (
-    {
-      case obj: JObject =>
-        obj.extractOpt[Map[String, JObject]].map { f =>
-          f.map { case (key, v) => (key, Schema.parse(v: JValue).get)}
-        } match {
-          case Some(p) => Properties(p)
-          case None => throw new MappingException("Isn't properties")
-        }
-      case x => throw new MappingException(x + " isn't properties")
-    },
+  object PropertiesSerializer
+      extends CustomSerializer[Properties](
+        _ =>
+          (
+            {
+              case obj: JObject =>
+                obj.extractOpt[Map[String, JObject]].map { f =>
+                  f.map { case (key, v) => (key, Schema.parse(v: JValue).get) }
+                } match {
+                  case Some(p) => Properties(p)
+                  case None    => throw new MappingException("Isn't properties")
+                }
+              case x => throw new MappingException(x + " isn't properties")
+            }, {
+              case Properties(fields) => JObject(fields.mapValues(Schema.normalize(_)).toList)
+            }
+        ))
 
-    {
-      case Properties(fields) => JObject(fields.mapValues(Schema.normalize(_)).toList)
-    }
-    ))
+  object AdditionalPropertiesSerializer
+      extends CustomSerializer[AdditionalProperties](
+        _ =>
+          (
+            {
+              case JBool(bool) => AdditionalPropertiesAllowed(bool)
+              case obj: JObject =>
+                Schema.parse(obj: JValue) match {
+                  case Some(schema) => AdditionalPropertiesSchema(schema)
+                  case None         => throw new MappingException(obj + " isn't additionalProperties")
+                }
+              case x => throw new MappingException(x + " isn't bool")
+            }, {
+              case AdditionalPropertiesAllowed(value) => JBool(value)
+              case AdditionalPropertiesSchema(value)  => Schema.normalize(value)
+            }
+        ))
 
-  object AdditionalPropertiesSerializer extends CustomSerializer[AdditionalProperties](_ => (
-    {
-      case JBool(bool) => AdditionalPropertiesAllowed(bool)
-      case obj: JObject => Schema.parse(obj: JValue) match {
-        case Some(schema) => AdditionalPropertiesSchema(schema)
-        case None => throw new MappingException(obj + " isn't additionalProperties")
-      }
-      case x => throw new MappingException(x + " isn't bool")
-    },
+  object RequiredSerializer
+      extends CustomSerializer[Required](
+        _ =>
+          (
+            {
+              case JArray(keys) =>
+                allString(keys) match {
+                  case Some(k) => Required(k)
+                  case None    => throw new MappingException("required array can contain only strings")
+                }
+              case x => throw new MappingException(x + " isn't bool")
+            }, {
+              case Required(keys) => JArray(keys.map(JString))
+            }
+        ))
 
-    {
-      case AdditionalPropertiesAllowed(value) => JBool(value)
-      case AdditionalPropertiesSchema(value) => Schema.normalize(value)
-    }
-    ))
-
-  object RequiredSerializer extends CustomSerializer[Required](_ => (
-    {
-      case JArray(keys) => allString(keys) match {
-        case Some(k) => Required(k)
-        case None => throw new MappingException("required array can contain only strings")
-      }
-      case x => throw new MappingException(x + " isn't bool")
-    },
-
-    {
-      case Required(keys) => JArray(keys.map(JString))
-    }
-    ))
-
-  object PatternPropertiesSerializer extends CustomSerializer[PatternProperties](_ => (
-    {
-      case obj: JObject =>
-        obj.extractOpt[Map[String, JObject]].map { f =>
-          f.map { case (key, v) => (key, Schema.parse(v: JValue).get)}
-        } match {
-          case Some(p) => PatternProperties(p)
-          case None => throw new MappingException("Isn't patternProperties")
-        }
-      case x => throw new MappingException(x + " isn't patternProperties")
-    },
-
-    {
-      case PatternProperties(fields) => JObject(fields.mapValues(Schema.normalize(_)).toList)
-    }
-    ))
+  object PatternPropertiesSerializer
+      extends CustomSerializer[PatternProperties](
+        _ =>
+          (
+            {
+              case obj: JObject =>
+                obj.extractOpt[Map[String, JObject]].map { f =>
+                  f.map { case (key, v) => (key, Schema.parse(v: JValue).get) }
+                } match {
+                  case Some(p) => PatternProperties(p)
+                  case None    => throw new MappingException("Isn't patternProperties")
+                }
+              case x => throw new MappingException(x + " isn't patternProperties")
+            }, {
+              case PatternProperties(fields) =>
+                JObject(fields.mapValues(Schema.normalize(_)).toList)
+            }
+        ))
 }

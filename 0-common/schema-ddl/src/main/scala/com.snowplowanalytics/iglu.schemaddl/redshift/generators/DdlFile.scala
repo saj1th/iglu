@@ -42,7 +42,9 @@ case class DdlFile(statements: List[Statement]) {
    */
   def render(formatters: List[StatementFormatter]): String = {
     val format: Statement => String = chooseFormatter(formatters)
-    val formatted = statements.foldLeft(List.empty[String]) { (acc, cur) => format(cur) :: acc }
+    val formatted = statements.foldLeft(List.empty[String]) { (acc, cur) =>
+      format(cur) :: acc
+    }
     formatted.reverse.mkString("\n")
   }
 

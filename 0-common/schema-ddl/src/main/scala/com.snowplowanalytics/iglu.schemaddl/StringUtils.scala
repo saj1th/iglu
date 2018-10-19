@@ -19,6 +19,7 @@ import com.snowplowanalytics.iglu.core.SchemaMap
  * Utilities for manipulating Strings
  */
 object StringUtils {
+
   /**
    * Create a Redshift Table name from a schema
    *
@@ -29,7 +30,10 @@ object StringUtils {
    */
   def getTableName(schemaMap: SchemaMap): String = {
     // Split the vendor's reversed domain name using underscores rather than dots
-    val snakeCaseOrganization = schemaMap.vendor.replaceAll( """\.""", "_").replaceAll("-", "_").toLowerCase
+    val snakeCaseOrganization = schemaMap.vendor
+      .replaceAll("""\.""", "_")
+      .replaceAll("-", "_")
+      .toLowerCase
 
     // Change the name from PascalCase to snake_case if necessary
     val snakeCaseName = snakeCase(schemaMap.name)
@@ -60,10 +64,11 @@ object StringUtils {
    * @return the underscored string
    */
   def snakeCase(str: String): String =
-    str.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2")
-       .replaceAll("([a-z\\d])([A-Z])", "$1_$2")
-       .replaceAll("-", "_")
-       .toLowerCase
+    str
+      .replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2")
+      .replaceAll("([a-z\\d])([A-Z])", "$1_$2")
+      .replaceAll("-", "_")
+      .toLowerCase
 
   /**
    * Checks if comma-delimited string contains only integers (including negative)
@@ -73,12 +78,12 @@ object StringUtils {
    */
   def isIntegerList(string: String): Boolean = {
     val elems = string.split(",").toList
-    if (elems.isEmpty) { false }
-    else {
+    if (elems.isEmpty) { false } else {
       elems.forall { s =>
         s.headOption match {
           case Some('-') if s.length > 1 => s.tail.forall(_.isDigit)
-          case _                         => s.forall(_.isDigit) }
+          case _                         => s.forall(_.isDigit)
+        }
       }
     }
   }
@@ -87,10 +92,11 @@ object StringUtils {
    * Utility object to match convertible strings
    */
   object IntegerAsString {
-    def unapply(s : String) : Option[Int] = try {
-      Some(s.toInt)
-    } catch {
-      case _: java.lang.NumberFormatException => None
-    }
+    def unapply(s: String): Option[Int] =
+      try {
+        Some(s.toInt)
+      } catch {
+        case _: java.lang.NumberFormatException => None
+      }
   }
 }

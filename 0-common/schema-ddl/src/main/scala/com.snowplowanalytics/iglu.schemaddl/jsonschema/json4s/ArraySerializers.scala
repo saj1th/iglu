@@ -25,62 +25,66 @@ object ArraySerializers {
   implicit val formats = DefaultFormats
   import implicits._
 
-  object ItemsSerializer extends CustomSerializer[Items](_ => (
-    {
-      case schema: JObject =>
-        Schema.parse(schema.asInstanceOf[JValue]) match {
-          case Some(s) => ListItems(s)
-          case None    => throw new MappingException(schema + " isn't Schema")
-        }
-      case tuple: JArray =>
-        val schemas: List[Option[Schema]] = tuple.arr.map(Schema.parse(_))
-        if (schemas.forall(_.isDefined)) TupleItems(schemas.map(_.get))
-        else throw new MappingException(tuple + " need to be array of Schemas")
-      case x => throw new MappingException(x + " isn't valid items")
-    },
+  object ItemsSerializer
+      extends CustomSerializer[Items](
+        _ =>
+          (
+            {
+              case schema: JObject =>
+                Schema.parse(schema.asInstanceOf[JValue]) match {
+                  case Some(s) => ListItems(s)
+                  case None    => throw new MappingException(schema + " isn't Schema")
+                }
+              case tuple: JArray =>
+                val schemas: List[Option[Schema]] = tuple.arr.map(Schema.parse(_))
+                if (schemas.forall(_.isDefined)) TupleItems(schemas.map(_.get))
+                else throw new MappingException(tuple + " need to be array of Schemas")
+              case x => throw new MappingException(x + " isn't valid items")
+            }, {
+              case ListItems(schema)   => Schema.normalize(schema)
+              case TupleItems(schemas) => JArray(schemas.map(Schema.normalize(_)))
+            }
+        ))
 
-    {
-      case ListItems(schema) => Schema.normalize(schema)
-      case TupleItems(schemas) => JArray(schemas.map(Schema.normalize(_)))
-    }
-    ))
+  object AdditionalPropertiesSerializer
+      extends CustomSerializer[AdditionalItems](
+        _ =>
+          (
+            {
+              case JBool(bool) => AdditionalItemsAllowed(bool)
+              case obj: JObject =>
+                Schema.parse(obj.asInstanceOf[JValue]) match {
+                  case Some(schema) => AdditionalItemsSchema(schema)
+                  case _            => throw new MappingException(obj + " isn't Schema")
+                }
+              case x => throw new MappingException(x + " isn't bool")
+            }, {
+              case AdditionalItemsAllowed(value) => JBool(value)
+              case AdditionalItemsSchema(schema) => Schema.normalize(schema)
+            }
+        ))
 
-  object AdditionalPropertiesSerializer extends CustomSerializer[AdditionalItems](_ => (
-    {
-      case JBool(bool) => AdditionalItemsAllowed(bool)
-      case obj: JObject => Schema.parse(obj.asInstanceOf[JValue]) match {
-        case Some(schema) => AdditionalItemsSchema(schema)
-        case _ => throw new MappingException(obj + " isn't Schema")
-      }
-      case x => throw new MappingException(x + " isn't bool")
-    },
+  object MinItemsSerializer
+      extends CustomSerializer[MinItems](
+        _ =>
+          (
+            {
+              case JInt(value) => MinItems(value)
+              case x           => throw new MappingException(x + " isn't minLength")
+            }, {
+              case MinItems(value) => JInt(value)
+            }
+        ))
 
-    {
-      case AdditionalItemsAllowed(value) => JBool(value)
-      case AdditionalItemsSchema(schema) => Schema.normalize(schema)
-    }
-    ))
-
-  object MinItemsSerializer extends CustomSerializer[MinItems](_ => (
-    {
-      case JInt(value) => MinItems(value)
-      case x => throw new MappingException(x + " isn't minLength")
-    },
-
-    {
-      case MinItems(value) => JInt(value)
-    }
-    ))
-
-
-  object MaxItemsSerializer extends CustomSerializer[MaxItems](_ => (
-    {
-      case JInt(value) => MaxItems(value)
-      case x => throw new MappingException(x + " isn't maxItems")
-    },
-
-    {
-      case MaxItems(value) => JInt(value)
-    }
-    ))
+  object MaxItemsSerializer
+      extends CustomSerializer[MaxItems](
+        _ =>
+          (
+            {
+              case JInt(value) => MaxItems(value)
+              case x           => throw new MappingException(x + " isn't maxItems")
+            }, {
+              case MaxItems(value) => JInt(value)
+            }
+        ))
 }

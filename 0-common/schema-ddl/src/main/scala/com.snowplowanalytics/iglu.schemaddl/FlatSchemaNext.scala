@@ -66,16 +66,19 @@ object FlatSchemaNext {
    * @param initPath accumulated path of parent subschemas
    * @return all flat properties
    */
-  def traverseProperties(flatSchema: FlatProperties, initPath: List[String] = Nil): FlatProperties = {
+  def traverseProperties(
+    flatSchema: FlatProperties,
+    initPath: List[String] = Nil): FlatProperties = {
     val (primitives, complex) = splitPrimitives(flatSchema, initPath)
 
     // traverse only into complex objects
-    val result = complex.foldLeft(Nil: FlatProperties) { case (acc, (path, schema)) =>
-      getProperties(schema) match {
-        case Some(properties) => traverseProperties(properties, path) ++ acc
-        // None will be returned for non-object with `properties`
-        case None             => List((initPath ++ path, schema))
-      }
+    val result = complex.foldLeft(Nil: FlatProperties) {
+      case (acc, (path, schema)) =>
+        getProperties(schema) match {
+          case Some(properties) => traverseProperties(properties, path) ++ acc
+          // None will be returned for non-object with `properties`
+          case None => List((initPath ++ path, schema))
+        }
     }
 
     primitives ++ result
@@ -89,8 +92,12 @@ object FlatSchemaNext {
    * @param initPath accumulated path of current subschema
    * @return pair of flat and complext lists of subschemas
    */
-  private def splitPrimitives(properties: FlatProperties, initPath: List[String]): (FlatProperties, FlatProperties) = {
-    val (c, p) = properties.partition { field => isObject(field._2) }
+  private def splitPrimitives(
+    properties: FlatProperties,
+    initPath: List[String]): (FlatProperties, FlatProperties) = {
+    val (c, p) = properties.partition { field =>
+      isObject(field._2)
+    }
 
     val primitives: FlatProperties =
       p.map { case (key, schema) => (initPath ++ key, schema) }
@@ -110,7 +117,7 @@ object FlatSchemaNext {
   private def isObject(schema: Schema): Boolean =
     schema.`type` match {
       case Some(Product(types)) => types.contains(Object)
-      case Some(Object) => true
-      case _ => false
+      case Some(Object)         => true
+      case _                    => false
     }
 }

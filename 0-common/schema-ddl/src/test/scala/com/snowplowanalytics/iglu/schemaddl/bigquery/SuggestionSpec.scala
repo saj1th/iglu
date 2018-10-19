@@ -13,14 +13,14 @@
 package com.snowplowanalytics.iglu.schemaddl
 package bigquery
 
-class SuggestionSpec extends org.specs2.Specification { def is = s2"""
+class SuggestionSpec extends org.specs2.Specification {
+  def is = s2"""
   stringSuggestion produces nullable field even with required $e1
   stringSuggestion produces nothing for union type $e2
   """
 
   def e1 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |{"type": ["null", "string"]}
       """.stripMargin)
 
@@ -30,8 +30,7 @@ class SuggestionSpec extends org.specs2.Specification { def is = s2"""
   }
 
   def e2 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |{"type": ["integer", "string"]}
       """.stripMargin)
 

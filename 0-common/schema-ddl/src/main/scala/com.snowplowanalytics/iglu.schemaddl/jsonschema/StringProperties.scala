@@ -47,19 +47,19 @@ object StringProperties {
     def keyName = "format"
     def asString: String
   }
-  case object UriFormat extends Format { val asString = "uri" }
-  case object Ipv4Format extends Format { val asString = "ipv4" }
-  case object Ipv6Format extends Format { val asString = "ipv6" }
-  case object EmailFormat extends Format { val asString = "email" }
+  case object UriFormat      extends Format { val asString = "uri"       }
+  case object Ipv4Format     extends Format { val asString = "ipv4"      }
+  case object Ipv6Format     extends Format { val asString = "ipv6"      }
+  case object EmailFormat    extends Format { val asString = "email"     }
   case object DateTimeFormat extends Format { val asString = "date-time" }
-  case object DateFormat extends Format { val asString = "date" }
-  case object HostNameFormat extends Format { val asString = "hostname" }
-  case object UuidFormat extends Format { val asString = "uuid" }
+  case object DateFormat     extends Format { val asString = "date"      }
+  case object HostNameFormat extends Format { val asString = "hostname"  }
+  case object UuidFormat     extends Format { val asString = "uuid"      }
 
   /**
    * Implementations MAY add custom format attributes
    */
-  case class CustomFormat(value: String) extends Format with StringProperty  { val asString = value }
+  case class CustomFormat(value: String) extends Format with StringProperty { val asString = value }
 
   /**
    * Class representing `pattern` keyword
@@ -70,5 +70,3 @@ object StringProperties {
     def keyName = "pattern"
   }
 }
-
-

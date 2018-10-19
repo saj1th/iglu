@@ -16,9 +16,9 @@ import com.snowplowanalytics.iglu.schemaddl.StringUtils
 import com.snowplowanalytics.iglu.schemaddl.jsonschema.{ArrayProperties, CommonProperties, Schema}
 
 /**
-  * Type-safe AST proxy to `com.google.cloud.bigquery.Field` schema type
-  * Up to client's code to convert it
-  */
+ * Type-safe AST proxy to `com.google.cloud.bigquery.Field` schema type
+ * Up to client's code to convert it
+ */
 case class Field(name: String, fieldType: Type, mode: Mode) {
   def setMode(mode: Mode): Field = this match {
     case Field(n, t, _) => Field(n, t, mode)
@@ -29,7 +29,7 @@ case class Field(name: String, fieldType: Type, mode: Mode) {
 
   def normalized: Field = fieldType match {
     case Type.Record(fields) => Field(normalName, Type.Record(fields.map(_.normalized)), mode)
-    case other => Field(normalName, other, mode)
+    case other               => Field(normalName, other, mode)
   }
 }
 
@@ -42,8 +42,9 @@ object Field {
           Suggestion.finalSuggestion(topSchema, required)(name)
         } else {
           val requiredKeys = topSchema.required.toList.flatMap(_.value)
-          val fields = subfields.map { case (key, schema) =>
-            build(key, schema, requiredKeys.contains(key))
+          val fields = subfields.map {
+            case (key, schema) =>
+              build(key, schema, requiredKeys.contains(key))
           }
           val subFields = fields.toList.sortBy(field => (Mode.sort(field.mode), field.name))
           Field(name, Type.Record(subFields), Mode.required(required))

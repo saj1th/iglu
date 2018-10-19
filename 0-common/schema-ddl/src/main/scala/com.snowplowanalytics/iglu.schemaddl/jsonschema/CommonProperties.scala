@@ -63,7 +63,6 @@ object CommonProperties {
     def hasNull: Boolean = value.contains(Null)
   }
 
-
   /**
    * Type representing value for `enum` key
    *
@@ -71,14 +70,12 @@ object CommonProperties {
    */
   case class Enum(value: List[JValue]) extends JsonSchemaProperty { def keyName = "enum" }
 
-
   /**
    * Type representing value for `oneOf` key
    *
    * @see http://json-schema.org/latest/json-schema-validation.html#anchor88
    */
   case class OneOf(value: List[Schema]) extends JsonSchemaProperty { def keyName = "oneOf" }
-
 
   /**
    * Type representing value for `description` key
@@ -90,6 +87,3 @@ object CommonProperties {
   }
 
 }
-
-
-

@@ -19,11 +19,11 @@ import org.json4s.jackson.JsonMethods.parse
 // specs2
 import org.specs2.Specification
 
-
 import StringProperties._
 import json4s.implicits._
 
-class StringSpec extends Specification { def is = s2"""
+class StringSpec extends Specification {
+  def is = s2"""
   Check JSON Schema string specification
     parse correct minLength $e1
     parse maxLength with ipv4 format $e2
@@ -31,8 +31,7 @@ class StringSpec extends Specification { def is = s2"""
   """
 
   def e1 = {
-    val schema = parse(
-      """
+    val schema = parse("""
         |{"minLength": 32}
       """.stripMargin)
 
@@ -40,20 +39,20 @@ class StringSpec extends Specification { def is = s2"""
   }
 
   def e2 = {
-    val schema = parse(
-      """
+    val schema = parse("""
         |{"maxLength": 32, "format": "ipv4"}
       """.stripMargin)
 
-    Schema.parse(schema) must beSome(Schema(maxLength = Some(MaxLength(32)), format = Some(Ipv4Format)))
+    Schema.parse(schema) must beSome(
+      Schema(maxLength = Some(MaxLength(32)), format = Some(Ipv4Format)))
   }
 
   def e3 = {
-    val schema = parse(
-      """
+    val schema = parse("""
         |{"maxLength": 32, "format": "unknown"}
       """.stripMargin)
 
-    Schema.parse(schema) must beSome(Schema(maxLength = Some(MaxLength(32)), format = Some(CustomFormat("unknown"))))
+    Schema.parse(schema) must beSome(
+      Schema(maxLength = Some(MaxLength(32)), format = Some(CustomFormat("unknown"))))
   }
 }

@@ -1,9 +1,10 @@
 package com.snowplowanalytics.iglu.schemaddl.jsonschema.json4s
 
 object Formats {
+
   /**
-    * json4s formats for all JSON Schema properties
-    */
+   * json4s formats for all JSON Schema properties
+   */
   implicit val allFormats: org.json4s.Formats =
     org.json4s.DefaultFormats +
       StringSerializers.FormatSerializer +

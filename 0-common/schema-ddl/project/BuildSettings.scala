@@ -10,7 +10,6 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
  */
-
 import bintray.BintrayPlugin._
 import bintray.BintrayKeys._
 import sbt._
@@ -19,13 +18,16 @@ import Keys._
 object BuildSettings {
 
   lazy val basicSettigns = Seq(
-    shellPrompt := { _ => "schema-ddl> " },
+    shellPrompt := { _ =>
+      "schema-ddl> "
+    },
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7")
   )
 
   lazy val compilerOptions = Seq(
     "-deprecation",
-    "-encoding", "UTF-8",
+    "-encoding",
+    "UTF-8",
     "-feature",
     "-language:existentials",
     "-language:higherKinds",
@@ -40,8 +42,10 @@ object BuildSettings {
   )
 
   lazy val javaCompilerOptions = Seq(
-    "-source", "1.8",
-    "-target", "1.8"
+    "-source",
+    "1.8",
+    "-target",
+    "1.8"
   )
 
   // Publish settings
@@ -53,11 +57,13 @@ object BuildSettings {
 
   // Maven Central publishing settings
   lazy val mavenCentralExtras = Seq[Setting[_]](
-    pomIncludeRepository := { _ => false },
+    pomIncludeRepository := { _ =>
+      false
+    },
     homepage := Some(url("http://snowplowanalytics.com")),
-    scmInfo := Some(ScmInfo(url("https://github.com/snowplow/iglu"), "scm:git@github.com:snowplow/iglu.git")),
-    pomExtra := (
-      <developers>
+    scmInfo := Some(
+      ScmInfo(url("https://github.com/snowplow/iglu"), "scm:git@github.com:snowplow/iglu.git")),
+    pomExtra := (<developers>
         <developer>
           <name>Snowplow Analytics Ltd</name>
           <email>support@snowplowanalytics.com</email>

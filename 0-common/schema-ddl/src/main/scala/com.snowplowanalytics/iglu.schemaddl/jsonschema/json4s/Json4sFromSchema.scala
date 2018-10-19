@@ -14,7 +14,7 @@ package com.snowplowanalytics.iglu.schemaddl.jsonschema
 package json4s
 
 // json4s
-import org.json4s.{ JValue, Extraction }
+import org.json4s.{Extraction, JValue}
 
 /**
  * Module containing type class instance with all Schema properties' Serializers

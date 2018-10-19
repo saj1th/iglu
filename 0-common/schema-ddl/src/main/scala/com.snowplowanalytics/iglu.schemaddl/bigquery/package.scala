@@ -16,6 +16,7 @@ import cats.data.ValidatedNel
 import com.snowplowanalytics.iglu.schemaddl.jsonschema.Schema
 
 package object bigquery {
+
   /** Suggest the BigQuery field, based on JSON Schema */
   type Suggestion = (Schema, Boolean) => Option[String => Field]
 

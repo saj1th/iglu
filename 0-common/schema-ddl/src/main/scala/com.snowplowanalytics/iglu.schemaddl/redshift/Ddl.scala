@@ -17,6 +17,7 @@ package redshift
  * Base class for everything that can be represented as Redshift DDL
  */
 trait Ddl {
+
   /**
    * Output actual DDL as string
    *
@@ -41,4 +42,3 @@ trait Ddl {
     else if (spaces <= str.length) str
     else str + (" " * (spaces - str.length))
 }
-

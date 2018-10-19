@@ -14,24 +14,26 @@ package com.snowplowanalytics.iglu.schemaddl.redshift
 package generators
 
 object EncodeSuggestions {
+
   /**
    * Type alias for function suggesting an compression encoding based on map of
    * JSON Schema properties
    */
-  type EncodingSuggestion = (Map[String, String], DataType, String) => Option[CompressionEncodingValue]
+  type EncodingSuggestion =
+    (Map[String, String], DataType, String) => Option[CompressionEncodingValue]
 
   // Suggest LZO Encoding for boolean, double precision and real
   val lzoSuggestion: EncodingSuggestion = (properties, dataType, columnName) =>
     dataType match {
       case RedshiftBoolean => Some(RunLengthEncoding)
-      case RedshiftDouble => Some(RawEncoding)
-      case RedshiftReal => Some(RawEncoding)
-      case _ => None
-    }
+      case RedshiftDouble  => Some(RawEncoding)
+      case RedshiftReal    => Some(RawEncoding)
+      case _               => None
+  }
 
   val zstdSuggestion: EncodingSuggestion = (properties, dataType, columnName) =>
     dataType match {
       case RedshiftVarchar(_) => Some(ZstdEncoding)
-      case _ => None
-    }
+      case _                  => None
+  }
 }

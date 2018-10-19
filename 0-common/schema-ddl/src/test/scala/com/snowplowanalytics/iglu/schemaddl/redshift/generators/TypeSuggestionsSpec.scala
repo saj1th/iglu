@@ -16,7 +16,8 @@ package generators
 // specs2
 import org.specs2.Specification
 
-class TypeSuggestionsSpec extends Specification { def is = s2"""
+class TypeSuggestionsSpec extends Specification {
+  def is = s2"""
   Check type suggestions
     suggest decimal for multipleOf == 0.01 $e1
     suggest integer for multipleOf == 1 $e2
@@ -30,7 +31,8 @@ class TypeSuggestionsSpec extends Specification { def is = s2"""
 
   def e1 = {
     val props = Map("type" -> "number", "multipleOf" -> "0.01")
-    DdlGenerator.getDataType(props, 16, "somecolumn") must beEqualTo(RedshiftDecimal(Some(36), Some(2)))
+    DdlGenerator.getDataType(props, 16, "somecolumn") must beEqualTo(
+      RedshiftDecimal(Some(36), Some(2)))
   }
 
   def e2 = {

@@ -22,7 +22,8 @@ import org.specs2.Specification
 // This library
 import json4s.implicits._
 
-class ParseSpec extends Specification { def is = s2"""
+class ParseSpec extends Specification {
+  def is = s2"""
   Check JSON Schema string specification
     parse big nested Schema $e1
     transform Schema AST into JSON $e2
@@ -31,8 +32,7 @@ class ParseSpec extends Specification { def is = s2"""
 
   def e1 = {
 
-    val schema = parse(
-      """
+    val schema = parse("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -114,66 +114,68 @@ class ParseSpec extends Specification { def is = s2"""
 
     val resultSchema = Schema(
       `type` = Object,
-      properties = Properties(Map(
-        "ipAddress" -> Schema(
-          `type` = String,
-          format = Ipv4Format
-        ),
-        "email" -> Schema(
-          `type` = String,
-          format = EmailFormat
-        ),
-        "someString" -> Schema(
-          `type` = String
-        ),
-        "netstedObject" -> Schema(
-          `type` = Object,
-          properties = Properties(Map(
-            "nestedKey" -> Schema(
-              `type` = Null
-            ),
-            "deeply" -> Schema(
-              `type` = Object,
-              properties = Properties(Map(
-                "blueDeep" -> Schema(
-                  `type` = Integer,
-                  minimum = IntegerMinimum(0),
-                  maximum = IntegerMaximum(32767)
-                ),
-                "deepUnionTypeArray" -> Schema(
-                  `type` = Array,
-                  items = ListItems(Schema(
-                    `type` = Product(List(Object, String, Null, Integer)),
-                    properties = Properties(Map(
-                      "foo" -> Schema(
-                        `type` = String
-                      )
-                    )),
-                    additionalProperties = AdditionalPropertiesAllowed(false),
+      properties = Properties(
+        Map(
+          "ipAddress" -> Schema(
+            `type` = String,
+            format = Ipv4Format
+          ),
+          "email" -> Schema(
+            `type` = String,
+            format = EmailFormat
+          ),
+          "someString" -> Schema(
+            `type` = String
+          ),
+          "netstedObject" -> Schema(
+            `type` = Object,
+            properties = Properties(Map(
+              "nestedKey" -> Schema(
+                `type` = Null
+              ),
+              "deeply" -> Schema(
+                `type` = Object,
+                properties = Properties(Map(
+                  "blueDeep" -> Schema(
+                    `type` = Integer,
                     minimum = IntegerMinimum(0),
                     maximum = IntegerMaximum(32767)
-                  ))
-                )
-              )),
-              additionalProperties = AdditionalPropertiesAllowed(false)
-            )
-          )),
-          additionalProperties = AdditionalPropertiesAllowed(false)
-        ),
-        "emptyObject" -> Schema(
-          `type` = Object,
-          properties = Properties(Map()),
-          additionalProperties = AdditionalPropertiesAllowed(false)
-        ),
-        "simpleArray" -> Schema(
-          `type` = Array,
-          items = ListItems(Schema(
-            `type` = Integer,
-            minimum = IntegerMinimum(0),
-            maximum = IntegerMaximum(32767)
-          ))
-        )
-      )),
+                  ),
+                  "deepUnionTypeArray" -> Schema(
+                    `type` = Array,
+                    items = ListItems(Schema(
+                      `type` = Product(List(Object, String, Null, Integer)),
+                      properties = Properties(Map(
+                        "foo" -> Schema(
+                          `type` = String
+                        )
+                      )),
+                      additionalProperties = AdditionalPropertiesAllowed(false),
+                      minimum = IntegerMinimum(0),
+                      maximum = IntegerMaximum(32767)
+                    ))
+                  )
+                )),
+                additionalProperties = AdditionalPropertiesAllowed(false)
+              )
+            )),
+            additionalProperties = AdditionalPropertiesAllowed(false)
+          ),
+          "emptyObject" -> Schema(
+            `type` = Object,
+            properties = Properties(Map()),
+            additionalProperties = AdditionalPropertiesAllowed(false)
+          ),
+          "simpleArray" -> Schema(
+            `type` = Array,
+            items = ListItems(
+              Schema(
+                `type` = Integer,
+                minimum = IntegerMinimum(0),
+                maximum = IntegerMaximum(32767)
+              ))
+          )
+        )),
       additionalProperties = AdditionalPropertiesAllowed(false)
     )
 
@@ -193,71 +195,72 @@ class ParseSpec extends Specification { def is = s2"""
 
     val sourceSchema = Schema(
       `type` = Object,
-      properties = Properties(Map(
-        "ipAddress" -> Schema(
-          `type` = String,
-          format = Ipv4Format
-        ),
-        "email" -> Schema(
-          `type` = String,
-          format = EmailFormat
-        ),
-        "someString" -> Schema(
-          `type` = String
-        ),
-        "netstedObject" -> Schema(
-          `type` = Object,
-          properties = Properties(Map(
-            "nestedKey" -> Schema(
-              `type` = Null
-            ),
-            "deeply" -> Schema(
-              `type` = Object,
-              properties = Properties(Map(
-                "blueDeep" -> Schema(
-                  `type` = Integer,
-                  minimum = IntegerMinimum(0),
-                  maximum = IntegerMaximum(32767)
-                ),
-                "deepUnionTypeArray" -> Schema(
-                  `type` = Array,
-                  items = ListItems(Schema(
-                    `type` = Product(List(Object, String, Null, Integer)),
-                    properties = Properties(Map(
-                      "foo" -> Schema(
-                        `type` = String
-                      )
-                    )),
-                    additionalProperties = AdditionalPropertiesAllowed(false),
+      properties = Properties(
+        Map(
+          "ipAddress" -> Schema(
+            `type` = String,
+            format = Ipv4Format
+          ),
+          "email" -> Schema(
+            `type` = String,
+            format = EmailFormat
+          ),
+          "someString" -> Schema(
+            `type` = String
+          ),
+          "netstedObject" -> Schema(
+            `type` = Object,
+            properties = Properties(Map(
+              "nestedKey" -> Schema(
+                `type` = Null
+              ),
+              "deeply" -> Schema(
+                `type` = Object,
+                properties = Properties(Map(
+                  "blueDeep" -> Schema(
+                    `type` = Integer,
                     minimum = IntegerMinimum(0),
                     maximum = IntegerMaximum(32767)
-                  ))
-                )
-              )),
-              additionalProperties = AdditionalPropertiesAllowed(false)
-            )
-          )),
-          additionalProperties = AdditionalPropertiesAllowed(false)
-        ),
-        "emptyObject" -> Schema(
-          `type` = Object,
-          properties = Properties(Map()),
-          additionalProperties = AdditionalPropertiesAllowed(false)
-        ),
-        "simpleArray" -> Schema(
-          `type` = Array,
-          items = ListItems(Schema(
-            `type` = Integer,
-            minimum = IntegerMinimum(0),
-            maximum = IntegerMaximum(32767)
-          ))
-        )
-      )),
+                  ),
+                  "deepUnionTypeArray" -> Schema(
+                    `type` = Array,
+                    items = ListItems(Schema(
+                      `type` = Product(List(Object, String, Null, Integer)),
+                      properties = Properties(Map(
+                        "foo" -> Schema(
+                          `type` = String
+                        )
+                      )),
+                      additionalProperties = AdditionalPropertiesAllowed(false),
+                      minimum = IntegerMinimum(0),
+                      maximum = IntegerMaximum(32767)
+                    ))
+                  )
+                )),
+                additionalProperties = AdditionalPropertiesAllowed(false)
+              )
+            )),
+            additionalProperties = AdditionalPropertiesAllowed(false)
+          ),
+          "emptyObject" -> Schema(
+            `type` = Object,
+            properties = Properties(Map()),
+            additionalProperties = AdditionalPropertiesAllowed(false)
+          ),
+          "simpleArray" -> Schema(
+            `type` = Array,
+            items = ListItems(
+              Schema(
+                `type` = Integer,
+                minimum = IntegerMinimum(0),
+                maximum = IntegerMaximum(32767)
+              ))
+          )
+        )),
       additionalProperties = AdditionalPropertiesAllowed(false)
     )
 
-    val resultSchema = parse(
-      """
+    val resultSchema = parse("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -333,8 +336,7 @@ class ParseSpec extends Specification { def is = s2"""
   }
 
   def e3 = {
-    val schema = parse(
-      """
+    val schema = parse("""
         |[]
       """.stripMargin)
 

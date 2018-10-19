@@ -25,7 +25,8 @@ import org.specs2.Specification
 import json4s.implicits._
 import SanityLinter._
 
-class SanityLinterSpec extends Specification { def is = s2"""
+class SanityLinterSpec extends Specification {
+  def is = s2"""
   Check SanityLinter specification
     recognize minLength and object type incompatibility $e1
     recognize minimum/maximum incompatibility inside deeply nested Schema (can be unwanted behavior) $e2
@@ -40,8 +41,7 @@ class SanityLinterSpec extends Specification { def is = s2"""
   """
 
   def e1 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema.parse(parse("""
         |{
         |  "type": "object",
         |  "minLength": 3
@@ -49,17 +49,17 @@ class SanityLinterSpec extends Specification { def is = s2"""
       """.stripMargin)).get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "String properties [minLength] require string or absent type",
-        "Root of schema should have type object and contain properties"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "String properties [minLength] require string or absent type",
+          "Root of schema should have type object and contain properties"
+        ))
     )
   }
 
   def e2 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema.parse(parse("""
         |{
         |  "additionalProperties": {
         |    "properties": {
@@ -86,23 +86,26 @@ class SanityLinterSpec extends Specification { def is = s2"""
       """.stripMargin)).get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "Root of schema should have type object and contain properties",
-        "Schema doesn't contain description property",
-        "Schema doesn't contain description property",
-        "Schema doesn't contain description property",
-        "Schema doesn't contain description property",
-        "Schema doesn't contain description property",
-        "Schema with numeric type has minimum property [5] greater than maximum [0]",
-        "Schema doesn't contain description property"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "Root of schema should have type object and contain properties",
+          "Schema doesn't contain description property",
+          "Schema doesn't contain description property",
+          "Schema doesn't contain description property",
+          "Schema doesn't contain description property",
+          "Schema doesn't contain description property",
+          "Schema with numeric type has minimum property [5] greater than maximum [0]",
+          "Schema doesn't contain description property"
+        ))
     )
   }
 
   def e3 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema
+      .parse(
+        parse(
+          """
         |{
         |  "additionalProperties": false,
         |  "properties": {
@@ -111,21 +114,25 @@ class SanityLinterSpec extends Specification { def is = s2"""
         |  "required": ["oneKey", "twoKey"]
         |}
       """.stripMargin
-    )).get
+        ))
+      .get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "Required properties [twoKey] doesn't exist in properties",
-        "Root of schema should have type object and contain properties",
-        "Schema doesn't contain description property"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "Required properties [twoKey] doesn't exist in properties",
+          "Root of schema should have type object and contain properties",
+          "Schema doesn't contain description property"
+        ))
     )
   }
 
   def e4 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema
+      .parse(
+        parse(
+          """
         |{
         |    "type": "object",
         |    "properties": {
@@ -152,31 +159,35 @@ class SanityLinterSpec extends Specification { def is = s2"""
         |    "additionalProperties": false
         |}
       """.stripMargin
-    )).get
+        ))
+      .get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "Optional field doesn't allow null type",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Schema doesn't contain description property",
-        "Schema with numeric type doesn't contain minimum and maximum properties",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Schema doesn't contain description property",
-        "Schema with numeric type doesn't contain minimum and maximum properties"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "Optional field doesn't allow null type",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Schema doesn't contain description property",
+          "Schema with numeric type doesn't contain minimum and maximum properties",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Schema doesn't contain description property",
+          "Schema with numeric type doesn't contain minimum and maximum properties"
+        ))
     )
   }
 
   def e5 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema
+      .parse(
+        parse(
+          """
         |{
         |    "type": "object",
         |    "properties": {
@@ -205,33 +216,37 @@ class SanityLinterSpec extends Specification { def is = s2"""
         |    "additionalProperties": false
         |}
       """.stripMargin
-    )).get
+        ))
+      .get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "Optional field doesn't allow null type",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Numeric properties [maximum] require number, integer or absent type",
-        "Schema doesn't contain description property",
-        "Schema with numeric type doesn't contain minimum and maximum properties",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Numeric properties [minimum] require number, integer or absent type",
-        "Schema doesn't contain description property",
-        "Schema with numeric type doesn't contain minimum and maximum properties"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "Optional field doesn't allow null type",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Numeric properties [maximum] require number, integer or absent type",
+          "Schema doesn't contain description property",
+          "Schema with numeric type doesn't contain minimum and maximum properties",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Numeric properties [minimum] require number, integer or absent type",
+          "Schema doesn't contain description property",
+          "Schema with numeric type doesn't contain minimum and maximum properties"
+        ))
     )
   }
 
   def e6 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema
+      .parse(
+        parse(
+          """
         |{
         |    "type": "array",
         |    "items": {
@@ -248,23 +263,27 @@ class SanityLinterSpec extends Specification { def is = s2"""
         |    }
         |}
       """.stripMargin
-    )).get
+        ))
+      .get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "Root of schema should have type object and contain properties",
-        "Schema doesn't contain description property",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Schema doesn't contain description property"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "Root of schema should have type object and contain properties",
+          "Schema doesn't contain description property",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Schema doesn't contain description property"
+        ))
     )
   }
 
   def e7 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema
+      .parse(
+        parse(
+          """
         |{
         |    "type": "object",
         |    "properties": {
@@ -278,23 +297,27 @@ class SanityLinterSpec extends Specification { def is = s2"""
         |    "required":["name"]
         |}
       """.stripMargin
-    )).get
+        ))
+      .get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "Optional field doesn't allow null type",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Schema doesn't contain description property",
-        "Schema with numeric type doesn't contain minimum and maximum properties"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "Optional field doesn't allow null type",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Schema doesn't contain description property",
+          "Schema with numeric type doesn't contain minimum and maximum properties"
+        ))
     )
   }
 
   def e8 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema
+      .parse(
+        parse(
+          """
         |{
         |    "type": "object",
         |    "properties": {
@@ -309,25 +332,25 @@ class SanityLinterSpec extends Specification { def is = s2"""
         |    "required":["name"]
         |}
       """.stripMargin
-    )).get
-
+        ))
+      .get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "Optional field doesn't allow null type",
-        "Schema doesn't contain description property",
-        "Schema with string type doesn't contain maxLength property or other ways to extract max length",
-        "Unknown format [camelCase] detected. Known formats are: date-time, date, email, hostname, ipv4, ipv6, uri",
-        "Schema doesn't contain description property",
-        "Schema with numeric type doesn't contain minimum and maximum properties"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "Optional field doesn't allow null type",
+          "Schema doesn't contain description property",
+          "Schema with string type doesn't contain maxLength property or other ways to extract max length",
+          "Unknown format [camelCase] detected. Known formats are: date-time, date, email, hostname, ipv4, ipv6, uri",
+          "Schema doesn't contain description property",
+          "Schema with numeric type doesn't contain minimum and maximum properties"
+        ))
     )
   }
 
   def e9 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema.parse(parse("""
         |{
         |  "type": "string",
         |  "minLength": 3,
@@ -336,17 +359,20 @@ class SanityLinterSpec extends Specification { def is = s2"""
       """.stripMargin)).get
 
     lint(schema, 0, allLinters.values.toList) must beEqualTo(
-      Failure(NonEmptyList(
-        "Schema doesn't contain description property",
-        "Schema with string type has maxLength property [65536] greater than Redshift VARCHAR(max) 65535",
-        "Root of schema should have type object and contain properties"
-      ))
+      Failure(
+        NonEmptyList(
+          "Schema doesn't contain description property",
+          "Schema with string type has maxLength property [65536] greater than Redshift VARCHAR(max) 65535",
+          "Root of schema should have type object and contain properties"
+        ))
     )
   }
 
   def e10 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema
+      .parse(
+        parse(
+          """
         |{
         |    "type": "object",
         |    "description": "Placeholder object",
@@ -384,14 +410,16 @@ class SanityLinterSpec extends Specification { def is = s2"""
         |    "additionalProperties": false
         |}
       """.stripMargin
-    )).get
+        ))
+      .get
 
     val skippedLinters = List(lintDescription)
 
     lint(schema, 0, allLinters.values.toList.diff(skippedLinters)) must beEqualTo(
-      Failure(NonEmptyList(
-        "Optional field doesn't allow null type"
-      ))
+      Failure(
+        NonEmptyList(
+          "Optional field doesn't allow null type"
+        ))
     )
   }
 }

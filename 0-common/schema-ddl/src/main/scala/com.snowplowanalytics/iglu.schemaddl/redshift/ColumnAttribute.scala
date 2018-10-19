@@ -70,4 +70,4 @@ case object Text255Encoding extends CompressionEncodingValue { def toDdl = "TEXT
 
 case object Text32KEncoding extends CompressionEncodingValue { def toDdl = "TEXT32K" }
 
-case object ZstdEncoding extends CompressionEncodingValue { def toDdl = "ZSTD"}
+case object ZstdEncoding extends CompressionEncodingValue { def toDdl = "ZSTD" }

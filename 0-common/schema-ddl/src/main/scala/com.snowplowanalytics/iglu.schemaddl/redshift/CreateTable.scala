@@ -28,8 +28,10 @@ case class CreateTable(
 ) extends Statement {
 
   def toDdl = {
-    val columnsDdl = columns.map(_.toFormattedDdl(tabulation)
-      .replaceAll("\\s+$", ""))
+    val columnsDdl = columns
+      .map(
+        _.toFormattedDdl(tabulation)
+          .replaceAll("\\s+$", ""))
       .mkString(",\n")
     s"""CREATE TABLE IF NOT EXISTS $tableName (
         |$columnsDdl$getConstraints
@@ -45,10 +47,10 @@ case class CreateTable(
       columns.foldLeft(0)((acc, b) => if (acc > f(b)) acc else f(b))
 
     val prepend = 4
-    val first = getLength(_.nameDdl.length)
-    val second = getLength(_.dataType.toDdl.length)
-    val third = getLength(_.attributesDdl.length)
-    val fourth = getLength(_.constraintsDdl.length)
+    val first   = getLength(_.nameDdl.length)
+    val second  = getLength(_.dataType.toDdl.length)
+    val third   = getLength(_.attributesDdl.length)
+    val fourth  = getLength(_.constraintsDdl.length)
 
     (prepend, first, second, third, fourth)
   }
@@ -60,10 +62,9 @@ case class CreateTable(
    */
   private def getConstraints: String = {
     if (tableConstraints.isEmpty) ""
-    else ",\n" + tableConstraints.map(c => withTabs(tabulation._1, " ") + c.toDdl).
-
-      mkString("\n")
+    else ",\n" + tableConstraints.map(c => withTabs(tabulation._1, " ") + c.toDdl).mkString("\n")
   }
+
   /**
    * Format attributes for table
    *
@@ -71,9 +72,6 @@ case class CreateTable(
    */
   private def getAttributes: String = {
     if (tableConstraints.isEmpty) ""
-    else "\n" + tableAttributes.map(_.toDdl).
-
-      mkString("\n")
+    else "\n" + tableAttributes.map(_.toDdl).mkString("\n")
   }
 }
-

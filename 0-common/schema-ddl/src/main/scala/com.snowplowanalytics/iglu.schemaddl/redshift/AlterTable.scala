@@ -47,8 +47,8 @@ case class AlterTable(tableName: String, statement: AlterTableStatement) extends
 sealed trait AlterTableStatement extends Ddl
 
 sealed trait DropModeValue extends Ddl
-case object CascadeDrop extends DropModeValue { def toDdl = "CASCADE" }
-case object RestrictDrop extends DropModeValue { def toDdl = "RESTRICT" }
+case object CascadeDrop    extends DropModeValue { def toDdl = "CASCADE" }
+case object RestrictDrop   extends DropModeValue { def toDdl = "RESTRICT" }
 
 case class DropMode(value: DropModeValue) extends Ddl {
   def toDdl = value.toDdl
@@ -58,7 +58,8 @@ case class AddConstraint(tableConstraint: TableConstraint) extends AlterTableSta
   def toDdl = s"ADD ${tableConstraint.toDdl}"
 }
 
-case class DropConstraint(constraintName: String, mode: Option[DropMode]) extends AlterTableStatement {
+case class DropConstraint(constraintName: String, mode: Option[DropMode])
+    extends AlterTableStatement {
   def toDdl = s"DROP $constraintName${mode.map(" " + _.toDdl).getOrElse("")}"
 }
 

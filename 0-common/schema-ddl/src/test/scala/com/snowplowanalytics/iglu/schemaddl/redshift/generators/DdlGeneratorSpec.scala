@@ -25,8 +25,8 @@ import scalaz.NonEmptyList
 // This library
 import com.snowplowanalytics.iglu.schemaddl.FlatSchema
 
-
-class DdlGeneratorSpec extends Specification { def is = s2"""
+class DdlGeneratorSpec extends Specification {
+  def is = s2"""
   Check DDL generation specification
     Generate correct DDL for atomic table $e1
     Generate correct DDL for with runlength encoding for booleans $e2
@@ -44,13 +44,17 @@ class DdlGeneratorSpec extends Specification { def is = s2"""
     val resultDdl = CreateTable(
       "atomic.launch_missles",
       DdlGenerator.selfDescSchemaColumns ++
-      DdlGenerator.parentageColumns ++
-      List(
-        Column("foo",RedshiftVarchar(30),Set(CompressionEncoding(ZstdEncoding)),Set(Nullability(NotNull))),
-        Column("bar",RedshiftVarchar(5),Set(CompressionEncoding(ZstdEncoding)),Set())
-      ),
-      Set(ForeignKeyTable(NonEmptyList("root_id"),RefTable("atomic.events",Some("event_id")))),
-      Set(Diststyle(Key), DistKeyTable("root_id"),SortKeyTable(None,NonEmptyList("root_tstamp")))
+        DdlGenerator.parentageColumns ++
+        List(
+          Column(
+            "foo",
+            RedshiftVarchar(30),
+            Set(CompressionEncoding(ZstdEncoding)),
+            Set(Nullability(NotNull))),
+          Column("bar", RedshiftVarchar(5), Set(CompressionEncoding(ZstdEncoding)), Set())
+        ),
+      Set(ForeignKeyTable(NonEmptyList("root_id"), RefTable("atomic.events", Some("event_id")))),
+      Set(Diststyle(Key), DistKeyTable("root_id"), SortKeyTable(None, NonEmptyList("root_tstamp")))
     )
 
     val ddl = DdlGenerator.generateTableDdl(flatSchema, "launch_missles", None, 4096)
@@ -71,14 +75,18 @@ class DdlGeneratorSpec extends Specification { def is = s2"""
     val resultDdl = CreateTable(
       "atomic.launch_missles",
       DdlGenerator.selfDescSchemaColumns ++
-      DdlGenerator.parentageColumns ++
-      List(
-        Column("foo",RedshiftBoolean,Set(CompressionEncoding(RunLengthEncoding)),Set(Nullability(NotNull))),
-        Column("bar",RedshiftVarchar(5),Set(CompressionEncoding(ZstdEncoding)),Set()),
-        Column("baz",RedshiftBoolean,Set(CompressionEncoding(RunLengthEncoding)),Set())
-      ),
-      Set(ForeignKeyTable(NonEmptyList("root_id"),RefTable("atomic.events",Some("event_id")))),
-      Set(Diststyle(Key), DistKeyTable("root_id"),SortKeyTable(None,NonEmptyList("root_tstamp")))
+        DdlGenerator.parentageColumns ++
+        List(
+          Column(
+            "foo",
+            RedshiftBoolean,
+            Set(CompressionEncoding(RunLengthEncoding)),
+            Set(Nullability(NotNull))),
+          Column("bar", RedshiftVarchar(5), Set(CompressionEncoding(ZstdEncoding)), Set()),
+          Column("baz", RedshiftBoolean, Set(CompressionEncoding(RunLengthEncoding)), Set())
+        ),
+      Set(ForeignKeyTable(NonEmptyList("root_id"), RefTable("atomic.events", Some("event_id")))),
+      Set(Diststyle(Key), DistKeyTable("root_id"), SortKeyTable(None, NonEmptyList("root_tstamp")))
     )
 
     val ddl = DdlGenerator.generateTableDdl(flatSchema, "launch_missles", None, 4096)

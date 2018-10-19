@@ -23,7 +23,8 @@ import org.specs2.matcher.ValidatedMatchers._
 import jsonschema.Schema
 import jsonschema.json4s.implicits._
 
-class RowSpec extends org.specs2.Specification { def is = s2"""
+class RowSpec extends org.specs2.Specification {
+  def is = s2"""
   castValue transforms any primitive value $e1
   castValue transforms object with matching primitive fields $e2
   castValue transforms object with missing nullable field $e3
@@ -39,25 +40,23 @@ class RowSpec extends org.specs2.Specification { def is = s2"""
 
   def e1 = {
     val string = castValue(Type.String)(json""""foo"""") must beValid(Primitive("foo"))
-    val int = castValue(Type.Integer)(json"-43") must beValid(Primitive(-43))
-    val bool = castValue(Type.Boolean)(Json.fromBoolean(false)) must beValid(Primitive(false))
+    val int    = castValue(Type.Integer)(json"-43") must beValid(Primitive(-43))
+    val bool   = castValue(Type.Boolean)(Json.fromBoolean(false)) must beValid(Primitive(false))
     string and int and bool
   }
 
   def e2 = {
     val inputJson = json"""{"foo": 42, "bar": true}"""
-    val inputField = Type.Record(List(
-      Field("foo", Type.Integer, Mode.Nullable),
-      Field("bar", Type.Boolean, Mode.Required)))
+    val inputField = Type.Record(
+      List(Field("foo", Type.Integer, Mode.Nullable), Field("bar", Type.Boolean, Mode.Required)))
     val expected = Record(List(("foo", Primitive(42)), ("bar", Primitive(true))))
     castValue(inputField)(inputJson) must beValid(expected)
   }
 
   def e3 = {
     val inputJson = json"""{"bar": true}"""
-    val inputField = Type.Record(List(
-      Field("foo", Type.Integer, Mode.Nullable),
-      Field("bar", Type.Boolean, Mode.Required)))
+    val inputField = Type.Record(
+      List(Field("foo", Type.Integer, Mode.Nullable), Field("bar", Type.Boolean, Mode.Required)))
     val expected = Record(List(("foo", Null), ("bar", Primitive(true))))
     castValue(inputField)(inputJson) must beValid(expected)
   }
@@ -70,11 +69,15 @@ class RowSpec extends org.specs2.Specification { def is = s2"""
         "undefined": 42
       }"""
 
-    val inputField = Type.Record(List(
-      Field("someBool", Type.Boolean, Mode.Required),
-      Field("repeatedInt", Type.Integer, Mode.Repeated)))
+    val inputField = Type.Record(
+      List(
+        Field("someBool", Type.Boolean, Mode.Required),
+        Field("repeatedInt", Type.Integer, Mode.Repeated)))
 
-    val expected = Record(List(("some_bool", Primitive(true)), ("repeated_int", Repeated(List(Primitive(1), Primitive(5), Primitive(2))))))
+    val expected = Record(
+      List(
+        ("some_bool", Primitive(true)),
+        ("repeated_int", Repeated(List(Primitive(1), Primitive(5), Primitive(2))))))
     castValue(inputField)(inputJson) must beValid(expected)
   }
 
@@ -90,25 +93,39 @@ class RowSpec extends org.specs2.Specification { def is = s2"""
         }
       }"""
 
-    val inputField = Type.Record(List(
-      Field("someBool", Type.Boolean, Mode.Required),
-      Field("nested", Type.Record(List(
-        Field("str", Type.String, Mode.Required),
-        Field("int", Type.Integer, Mode.Nullable),
-        Field("deep", Type.Record(List(Field("str", Type.String, Mode.Nullable))), Mode.Required),
-        Field("arr", Type.Record(List(Field("a", Type.String, Mode.Required))), Mode.Repeated)
-      )), Mode.Nullable)
-    ))
+    val inputField = Type.Record(
+      List(
+        Field("someBool", Type.Boolean, Mode.Required),
+        Field(
+          "nested",
+          Type.Record(List(
+            Field("str", Type.String, Mode.Required),
+            Field("int", Type.Integer, Mode.Nullable),
+            Field(
+              "deep",
+              Type.Record(List(Field("str", Type.String, Mode.Nullable))),
+              Mode.Required),
+            Field("arr", Type.Record(List(Field("a", Type.String, Mode.Required))), Mode.Repeated)
+          )),
+          Mode.Nullable
+        )
+      ))
 
-    val expected = Record(List(
-      ("some_bool", Primitive(true)),
-      ("nested", Record(List(
-        ("str", Primitive("foo bar")),
-        ("int", Primitive(3)),
-        ("deep", Record(List(("str", Primitive("foo"))))),
-        ("arr", Repeated(List(Record(List(("a", Primitive("b")))), Record(List(("a", Primitive("d")))))))
-      )))
-    ))
+    val expected = Record(
+      List(
+        ("some_bool", Primitive(true)),
+        (
+          "nested",
+          Record(List(
+            ("str", Primitive("foo bar")),
+            ("int", Primitive(3)),
+            ("deep", Record(List(("str", Primitive("foo"))))),
+            (
+              "arr",
+              Repeated(
+                List(Record(List(("a", Primitive("b")))), Record(List(("a", Primitive("d")))))))
+          )))
+      ))
 
     castValue(inputField)(inputJson) must beValid(expected)
   }
@@ -133,23 +150,24 @@ class RowSpec extends org.specs2.Specification { def is = s2"""
 
     val inputField = Type.Record(List(Field("unionType", Type.String, Mode.Nullable)))
 
-    val expected = Record(List(("union_type", Primitive("""["this","is","fallback","strategy"]"""))))
+    val expected = Record(
+      List(("union_type", Primitive("""["this","is","fallback","strategy"]"""))))
     castValue(inputField)(inputJson) must beValid(expected)
   }
 
-  def e8 = {    // TODO: check if BQ actually allows it
+  def e8 = { // TODO: check if BQ actually allows it
     val inputJson =
       json"""["this", "has", "no", null, "at all", null]"""
 
     val inputField = Type.String
 
-    val expected = Repeated(List(Primitive("this"), Primitive("has"), Primitive("no"), Primitive("at all")))
+    val expected = Repeated(
+      List(Primitive("this"), Primitive("has"), Primitive("no"), Primitive("at all")))
     castRepeated(inputField, inputJson) must beValid(expected)
   }
 
   def e9 = {
-    val schema = Schema.parse(parse(
-      """
+    val schema = Schema.parse(parse("""
         |  {
         |    "type": "object",
         |    "properties": {
@@ -164,9 +182,9 @@ class RowSpec extends org.specs2.Specification { def is = s2"""
 
     // TODO: add generator test
     // val inputField = Generator.build("array_test", schema, true)
-    val fds = List(Field("imp",Type.String,Mode.Repeated))
-    val t = Type.Record(fds)
-    val inputField = Field("array_test",t,Mode.Required)
+    val fds        = List(Field("imp", Type.String, Mode.Repeated))
+    val t          = Type.Record(fds)
+    val inputField = Field("array_test", t, Mode.Required)
 
     val inputJson = json"""{}"""
 

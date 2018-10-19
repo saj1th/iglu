@@ -20,7 +20,7 @@ import scalaz._
 import Scalaz._
 
 // Iglu core
-import com.snowplowanalytics.iglu.core.{ SchemaMap, SchemaVer }
+import com.snowplowanalytics.iglu.core.{SchemaMap, SchemaVer}
 
 // This project
 import FlatSchema.flattenJsonSchema
@@ -55,7 +55,8 @@ case class Migration(
 
 object Migration {
 
-  implicit val schemaOrdering = implicitly[Order[Int]].contramap[IgluSchema](_.self.version.addition)
+  implicit val schemaOrdering =
+    implicitly[Order[Int]].contramap[IgluSchema](_.self.version.addition)
 
   /**
    * This class represents differences between two Schemas
@@ -93,9 +94,12 @@ object Migration {
    *                          with destination in the end of list
    * @return migraion object with data about source, target and diff
    */
-  def buildMigration(sourceSchema: IgluSchema, successiveSchemas: List[IgluSchema]): Validation[String, Migration] = {
+  def buildMigration(
+    sourceSchema: IgluSchema,
+    successiveSchemas: List[IgluSchema]): Validation[String, Migration] = {
     val flatSource = flattenJsonSchema(sourceSchema.schema, splitProduct = false).map(_.elems)
-    val flatSuccessive = successiveSchemas.map(s => flattenJsonSchema(s.schema, splitProduct = false)).sequenceU
+    val flatSuccessive =
+      successiveSchemas.map(s => flattenJsonSchema(s.schema, splitProduct = false)).sequenceU
     val target = successiveSchemas.last
 
     (flatSource |@| flatSuccessive) { (source, successive) =>
@@ -104,7 +108,8 @@ object Migration {
         sourceSchema.self.vendor,
         sourceSchema.self.name,
         sourceSchema.self.version,
-        target.self.version, diff)
+        target.self.version,
+        diff)
     }
   }
 
@@ -116,10 +121,10 @@ object Migration {
    * @return diff between two Schmea
    */
   def diffMaps(source: PropertyList, successive: List[PropertyList]): SchemaDiff = {
-    val target = successive.last
-    val addedKeys = getAddedKeys(source, successive)
-    val added = getSubmap(addedKeys, target)
-    val modified = getModifiedProperties(source, target, addedKeys)
+    val target      = successive.last
+    val addedKeys   = getAddedKeys(source, successive)
+    val added       = getSubmap(addedKeys, target)
+    val modified    = getModifiedProperties(source, target, addedKeys)
     val removedKeys = (source.keys.toList diff target.keys.toList).toSet
     SchemaDiff(added, modified, removedKeys)
   }
@@ -132,8 +137,9 @@ object Migration {
    * @return possibly empty list of keys in correct order
    */
   def getAddedKeys(source: PropertyList, successive: List[PropertyList]): List[String] = {
-    val (newKeys, _) = successive.foldLeft((List.empty[String], source)) { case ((acc, previous), current) =>
-      (acc ++ (current.keys.toList diff previous.keys.toList), current)
+    val (newKeys, _) = successive.foldLeft((List.empty[String], source)) {
+      case ((acc, previous), current) =>
+        (acc ++ (current.keys.toList diff previous.keys.toList), current)
     }
     newKeys
   }
@@ -147,7 +153,10 @@ object Migration {
    *                  should be included in [[SchemaDiff]] separately
    * @return list of properties changed in target Schema
    */
-  def getModifiedProperties(source: PropertyList, target: PropertyList, addedKeys: List[String]): PropertyList = {
+  def getModifiedProperties(
+    source: PropertyList,
+    target: PropertyList,
+    addedKeys: List[String]): PropertyList = {
     val targetModified = target.filterKeys(!addedKeys.contains(_))
     ListMap(targetModified.toList diff source.toList: _*)
   }
@@ -205,7 +214,8 @@ object Migration {
    * @param migrationMap map of each Schema to list of all available migrations
    * @return map of revision criterion to list with all added columns
    */
-  def getOrdering(migrationMap: ValidMigrationMap): Map[RevisionGroup, Validation[String, List[String]]] =
+  def getOrdering(
+    migrationMap: ValidMigrationMap): Map[RevisionGroup, Validation[String, List[String]]] =
     migrationMap.filterKeys(_.version.addition == 0).map {
       case (description, Success(migrations)) =>
         val longestMigration = migrations.map(_.diff.added.keys.toList).maxBy(x => x.length)
@@ -227,10 +237,11 @@ object Migration {
       targets                   <- targetsSequence
     } yield (source.self, buildMigration(source, targets))
 
-    migrations.groupBy(_._1)
+    migrations
+      .groupBy(_._1)
       .mapValues(_.map(_._2))
       .mapValues(_.sequenceU)
-      .asInstanceOf[ValidMigrationMap]  // Help IDE to infer type
+      .asInstanceOf[ValidMigrationMap] // Help IDE to infer type
   }
 
   /**
@@ -247,8 +258,9 @@ object Migration {
     val groupedMigrationMap = distinctSchemas(allSchemas).map {
       case (revision, schemas) => (revision, buildAdditionMigrations(schemas))
     }
-    groupedMigrationMap.flatMap { case (_, additionMigrationMap) =>
-      additionMigrationMap.map { case (source, migrations) => (source, migrations) }
+    groupedMigrationMap.flatMap {
+      case (_, additionMigrationMap) =>
+        additionMigrationMap.map { case (source, migrations) => (source, migrations) }
     }
   }
 

@@ -36,62 +36,65 @@ object CommonSerializers {
     case _                  => None
   }
 
-  object TypeSerializer extends CustomSerializer[Type](_ => (
-    {
-      case JArray(ts) =>
-        val types = ts.map(stringToType)
-        val union = if (types.exists(_.isEmpty)) None else Some(types.map(_.get))
-        union match {
-          case Some(List(t)) => t
-          case Some(u)       => Product(u)
-          case None          => throw new MappingException(ts + " is not valid list of types")
-        }
-      case str @ JString(t) =>
-        stringToType(str) match {
-          case Some(singleType) => singleType
-          case None             => throw new MappingException(str + " is not valid list of types")
-        }
-      case x => throw new MappingException(x + " is not valid list of types")
-    },
+  object TypeSerializer
+      extends CustomSerializer[Type](
+        _ =>
+          (
+            {
+              case JArray(ts) =>
+                val types = ts.map(stringToType)
+                val union = if (types.exists(_.isEmpty)) None else Some(types.map(_.get))
+                union match {
+                  case Some(List(t)) => t
+                  case Some(u)       => Product(u)
+                  case None          => throw new MappingException(ts + " is not valid list of types")
+                }
+              case str @ JString(t) =>
+                stringToType(str) match {
+                  case Some(singleType) => singleType
+                  case None             => throw new MappingException(str + " is not valid list of types")
+                }
+              case x => throw new MappingException(x + " is not valid list of types")
+            }, {
+              case t: Type => t.asJson
+            }
+        ))
 
-    {
-      case t: Type => t.asJson
-    }
-    ))
+  object DescriptionSerializer
+      extends CustomSerializer[Description](
+        x =>
+          (
+            {
+              case JString(value) => Description(value)
+              case x              => throw new MappingException(x + " isn't valid description")
+            }, {
+              case Description(value) => JString(value)
+            }
+        ))
 
-  object DescriptionSerializer extends CustomSerializer[Description](x => (
-    {
-      case JString(value) => Description(value)
-      case x => throw new MappingException(x + " isn't valid description")
-    },
+  object EnumSerializer
+      extends CustomSerializer[Enum](
+        _ =>
+          (
+            {
+              case JArray(values) => Enum(values)
+              case x              => throw new MappingException(x + " isn't valid enum")
+            }, {
+              case Enum(values) => JArray(values)
+            }
+        ))
 
-    {
-      case Description(value) => JString(value)
-    }
-    ))
-
-
-  object EnumSerializer extends CustomSerializer[Enum](_ => (
-    {
-      case JArray(values) => Enum(values)
-      case x => throw new MappingException(x + " isn't valid enum")
-    },
-
-    {
-      case Enum(values) => JArray(values)
-    }
-    ))
-
-  object OneOfSerializer extends CustomSerializer[OneOf](_ => (
-    {
-      case JArray(values) =>
-        val schemas: List[Option[Schema]] = values.map(Schema.parse(_))
-        if (schemas.forall(_.isDefined)) OneOf(schemas.map(_.get))
-        else throw new MappingException(values + " need to be array of Schemas")
-    },
-
-    {
-      case OneOf(schemas) => JArray(schemas.map(Schema.normalize(_)))
-    }
-    ))
+  object OneOfSerializer
+      extends CustomSerializer[OneOf](
+        _ =>
+          (
+            {
+              case JArray(values) =>
+                val schemas: List[Option[Schema]] = values.map(Schema.parse(_))
+                if (schemas.forall(_.isDefined)) OneOf(schemas.map(_.get))
+                else throw new MappingException(values + " need to be array of Schemas")
+            }, {
+              case OneOf(schemas) => JArray(schemas.map(Schema.normalize(_)))
+            }
+        ))
 }

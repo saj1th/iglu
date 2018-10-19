@@ -19,19 +19,18 @@ import org.json4s.jackson.JsonMethods.parse
 // specs2
 import org.specs2.Specification
 
-
 import ArrayProperties._
 import json4s.implicits._
 
-class ArraySpec extends Specification { def is = s2"""
+class ArraySpec extends Specification {
+  def is = s2"""
   Check JSON Schema string specification
     parse correct minItems $e1
     parse incorrect (negative) minItems (DECIDE IF THIS DESIRED) $e2
   """
 
   def e1 = {
-    val schema = parse(
-      """
+    val schema = parse("""
         |{"minItems": 32}
       """.stripMargin)
 
@@ -39,8 +38,7 @@ class ArraySpec extends Specification { def is = s2"""
   }
 
   def e2 = {
-    val schema = parse(
-      """
+    val schema = parse("""
         |{"maxItems": -32}
       """.stripMargin)
 

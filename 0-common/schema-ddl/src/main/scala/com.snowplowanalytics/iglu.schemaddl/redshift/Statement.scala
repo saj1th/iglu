@@ -19,6 +19,7 @@ package com.snowplowanalytics.iglu.schemaddl.redshift
  * We're always using semicolon in the end of statements
  */
 trait Statement extends Ddl with Product with Serializable {
+
   /**
    * Symbol used to separate statement from other.
    * Usually it is a semicolon, however special statements, like

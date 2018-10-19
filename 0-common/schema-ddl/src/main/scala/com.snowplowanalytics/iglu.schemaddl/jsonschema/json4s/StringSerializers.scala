@@ -21,56 +21,59 @@ import jsonschema.StringProperties._
 
 object StringSerializers {
 
-  object FormatSerializer extends CustomSerializer[Format](_ => (
-    {
-      case JString(format) if format == "ipv4" => Ipv4Format
-      case JString(format) if format == "ipv6" => Ipv6Format
-      case JString(format) if format == "uri" => UriFormat
-      case JString(format) if format == "email" => EmailFormat
-      case JString(format) if format == "hostname" => HostNameFormat
-      case JString(format) if format == "date-time" => DateTimeFormat
-      case JString(format) if format == "date" => DateFormat
-      case JString(format) if format == "uuid" => UuidFormat
-      case JString(format) => CustomFormat(format)
-      case x => throw new MappingException("Format must be string")
-    },
-    {
-      case f: Format => JString(f.asString)
-    }
+  object FormatSerializer
+      extends CustomSerializer[Format](
+        _ =>
+          (
+            {
+              case JString(format) if format == "ipv4"      => Ipv4Format
+              case JString(format) if format == "ipv6"      => Ipv6Format
+              case JString(format) if format == "uri"       => UriFormat
+              case JString(format) if format == "email"     => EmailFormat
+              case JString(format) if format == "hostname"  => HostNameFormat
+              case JString(format) if format == "date-time" => DateTimeFormat
+              case JString(format) if format == "date"      => DateFormat
+              case JString(format) if format == "uuid"      => UuidFormat
+              case JString(format)                          => CustomFormat(format)
+              case x                                        => throw new MappingException("Format must be string")
+            }, {
+              case f: Format => JString(f.asString)
+            }
+        ))
 
-    ))
+  object MinLengthSerializer
+      extends CustomSerializer[MinLength](
+        _ =>
+          (
+            {
+              case JInt(value) if value >= 0 => MinLength(value)
+              case x                         => throw new MappingException(x + " isn't minLength")
+            }, {
+              case MinLength(value) => JInt(value)
+            }
+        ))
 
-  object MinLengthSerializer extends CustomSerializer[MinLength](_ => (
-    {
-      case JInt(value) if value >= 0 => MinLength(value)
-      case x => throw new MappingException(x + " isn't minLength")
-    },
+  object MaxLengthSerializer
+      extends CustomSerializer[MaxLength](
+        _ =>
+          (
+            {
+              case JInt(value) if value >= 0 => MaxLength(value)
+              case x                         => throw new MappingException(x + " isn't maxLength")
+            }, {
+              case MaxLength(value) => JInt(value)
+            }
+        ))
 
-    {
-      case MinLength(value) => JInt(value)
-    }
-    ))
-
-
-  object MaxLengthSerializer extends CustomSerializer[MaxLength](_ => (
-    {
-      case JInt(value) if value >= 0 => MaxLength(value)
-      case x => throw new MappingException(x + " isn't maxLength")
-    },
-
-    {
-      case MaxLength(value) => JInt(value)
-    }
-    ))
-
-  object PatternSerializer extends CustomSerializer[Pattern](x => (
-    {
-      case JString(value) => Pattern(value)
-      case x => throw new MappingException(x + " isn't valid regex")
-    },
-
-    {
-      case Pattern(value) => JString(value)
-    }
-    ))
+  object PatternSerializer
+      extends CustomSerializer[Pattern](
+        x =>
+          (
+            {
+              case JString(value) => Pattern(value)
+              case x              => throw new MappingException(x + " isn't valid regex")
+            }, {
+              case Pattern(value) => JString(value)
+            }
+        ))
 }

@@ -12,7 +12,8 @@
  */
 package com.snowplowanalytics.iglu.schemaddl.redshift
 
-case class Begin(isolationLevel: Option[IsolationLevel.type], permission: Option[Permission]) extends Statement {
+case class Begin(isolationLevel: Option[IsolationLevel.type], permission: Option[Permission])
+    extends Statement {
   def toDdl = {
     val attrs = List(isolationLevel, permission).flatten.map(_.toDdl)
     s"BEGIN TRANSACTION${envelope(attrs)}"
@@ -24,9 +25,9 @@ case class Begin(isolationLevel: Option[IsolationLevel.type], permission: Option
   }
 }
 
-sealed trait Permission extends Ddl
+sealed trait Permission        extends Ddl
 case object ReadWriteIsolation extends Permission { def toDdl = "READ WRITE" }
-case object ReadOnly extends Permission { def toDdl = "READ ONLY" }
+case object ReadOnly           extends Permission { def toDdl = "READ ONLY" }
 
 case object IsolationLevel extends Ddl {
   def toDdl = "ISOLATION LEVEL SERIALIZABLE"

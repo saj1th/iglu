@@ -39,7 +39,10 @@ object DdlGenerator {
    * @param schemaName optional schema name
    * @return SQL comment
    */
-  def getTableComment(tableName: String, schemaName: Option[String], schemaMap: SchemaMap): CommentOn = {
+  def getTableComment(
+    tableName: String,
+    schemaName: Option[String],
+    schemaMap: SchemaMap): CommentOn = {
     val schema = schemaName.map(_ + ".").getOrElse("")
     CommentOn(schema + tableName, schemaMap.toSchemaUri)
   }
@@ -52,7 +55,10 @@ object DdlGenerator {
    * @param fileName JSON Schema file name
    * @return SQL comment
    */
-  def getTableComment(tableName: String, schemaName: Option[String], fileName: String): CommentOn = {
+  def getTableComment(
+    tableName: String,
+    schemaName: Option[String],
+    fileName: String): CommentOn = {
     val schema = schemaName.map(_ + ".").getOrElse("")
     CommentOn(schema + tableName, "Source: " + fileName)
   }
@@ -68,38 +74,71 @@ object DdlGenerator {
    * @return CreateTable object with all data about table creation
    */
   def generateTableDdl(
-      flatSchema: FlatSchema,
-      name: String,
-      dbSchema: Option[String],
-      size: Int,
-      rawMode: Boolean = false)
-  : CreateTable = {
+    flatSchema: FlatSchema,
+    name: String,
+    dbSchema: Option[String],
+    size: Int,
+    rawMode: Boolean = false): CreateTable = {
 
-    val columns = getColumnsDdl(flatSchema.elems, flatSchema.required, size)
-                    .toList
-                    .sortBy(c => (-c.columnConstraints.size, c.columnName))
-    
+    val columns = getColumnsDdl(flatSchema.elems, flatSchema.required, size).toList
+      .sortBy(c => (-c.columnConstraints.size, c.columnName))
+
     if (rawMode) getRawTableDdl(dbSchema, name, columns)
     else getAtomicTableDdl(dbSchema, name, columns)
   }
 
   // Columns with data taken from self-describing schema
   private[redshift] val selfDescSchemaColumns = List(
-    Column("schema_vendor", RedshiftVarchar(128), Set(CompressionEncoding(ZstdEncoding)), Set(Nullability(NotNull))),
-    Column("schema_name", RedshiftVarchar(128), Set(CompressionEncoding(ZstdEncoding)), Set(Nullability(NotNull))),
-    Column("schema_format", RedshiftVarchar(128), Set(CompressionEncoding(ZstdEncoding)), Set(Nullability(NotNull))),
-    Column("schema_version", RedshiftVarchar(128), Set(CompressionEncoding(ZstdEncoding)), Set(Nullability(NotNull)))
+    Column(
+      "schema_vendor",
+      RedshiftVarchar(128),
+      Set(CompressionEncoding(ZstdEncoding)),
+      Set(Nullability(NotNull))),
+    Column(
+      "schema_name",
+      RedshiftVarchar(128),
+      Set(CompressionEncoding(ZstdEncoding)),
+      Set(Nullability(NotNull))),
+    Column(
+      "schema_format",
+      RedshiftVarchar(128),
+      Set(CompressionEncoding(ZstdEncoding)),
+      Set(Nullability(NotNull))),
+    Column(
+      "schema_version",
+      RedshiftVarchar(128),
+      Set(CompressionEncoding(ZstdEncoding)),
+      Set(Nullability(NotNull)))
   )
 
   // Snowplow-specific columns
   private[redshift] val parentageColumns = List(
-    Column("root_id", RedshiftChar(36), Set(CompressionEncoding(RawEncoding)), Set(Nullability(NotNull))),
-    Column("root_tstamp", RedshiftTimestamp, Set(CompressionEncoding(ZstdEncoding)), Set(Nullability(NotNull))),
-    Column("ref_root", RedshiftVarchar(255), Set(CompressionEncoding(ZstdEncoding)), Set(Nullability(NotNull))),
-    Column("ref_tree", RedshiftVarchar(1500), Set(CompressionEncoding(ZstdEncoding)), Set(Nullability(NotNull))),
-    Column("ref_parent", RedshiftVarchar(255), Set(CompressionEncoding(ZstdEncoding)), Set(Nullability(NotNull)))
+    Column(
+      "root_id",
+      RedshiftChar(36),
+      Set(CompressionEncoding(RawEncoding)),
+      Set(Nullability(NotNull))),
+    Column(
+      "root_tstamp",
+      RedshiftTimestamp,
+      Set(CompressionEncoding(ZstdEncoding)),
+      Set(Nullability(NotNull))),
+    Column(
+      "ref_root",
+      RedshiftVarchar(255),
+      Set(CompressionEncoding(ZstdEncoding)),
+      Set(Nullability(NotNull))),
+    Column(
+      "ref_tree",
+      RedshiftVarchar(1500),
+      Set(CompressionEncoding(ZstdEncoding)),
+      Set(Nullability(NotNull))),
+    Column(
+      "ref_parent",
+      RedshiftVarchar(255),
+      Set(CompressionEncoding(ZstdEncoding)),
+      Set(Nullability(NotNull)))
   )
-
 
   /**
    * Generate DDL for atomic (with Snowplow-specific columns and attributes) table
@@ -109,16 +148,18 @@ object DdlGenerator {
    * @param columns list of generated DDLs for columns
    * @return full CREATE TABLE statement ready to be rendered
    */
-  private def getAtomicTableDdl(dbSchema: Option[String], name: String, columns: List[Column]): CreateTable = {
+  private def getAtomicTableDdl(
+    dbSchema: Option[String],
+    name: String,
+    columns: List[Column]): CreateTable = {
     val schema           = dbSchema.getOrElse("atomic")
     val fullTableName    = schema + "." + name
     val tableConstraints = Set[TableConstraint](RedshiftDdlDefaultForeignKey(schema))
-    val tableAttributes  = Set[TableAttribute]( // Snowplow-specific attributes
+    val tableAttributes = Set[TableAttribute]( // Snowplow-specific attributes
       Diststyle(Key),
       DistKeyTable("root_id"),
-      SortKeyTable(None, NonEmptyList("root_tstamp"))
-    )
-    
+      SortKeyTable(None, NonEmptyList("root_tstamp")))
+
     CreateTable(
       fullTableName,
       selfDescSchemaColumns ++ parentageColumns ++ columns,
@@ -135,7 +176,10 @@ object DdlGenerator {
    * @param columns list of generated DDLs for columns
    * @return full CREATE TABLE statement ready to be rendered
    */
-  private def getRawTableDdl(dbSchema: Option[String], name: String, columns: List[Column]): CreateTable = {
+  private def getRawTableDdl(
+    dbSchema: Option[String],
+    name: String,
+    columns: List[Column]): CreateTable = {
     val fullTableName = dbSchema.map(_ + "." + name).getOrElse(name)
     CreateTable(fullTableName, columns)
   }
@@ -162,10 +206,9 @@ object DdlGenerator {
    * @return a list of Column DDLs
    */
   private[schemaddl] def getColumnsDdl(
-      flatDataElems: PropertyList,
-      required: Set[String],
-      varcharSize: Int)
-  : Iterable[Column] = {
+    flatDataElems: PropertyList,
+    required: Set[String],
+    varcharSize: Int): Iterable[Column] = {
 
     // Process each key pair in the map
     for {
@@ -173,10 +216,14 @@ object DdlGenerator {
     } yield {
       val dataType = getDataType(properties, varcharSize, columnName)
       val encoding = getEncoding(properties, dataType, columnName)
-      val constraints =    // only "NOT NULL" now
+      val constraints = // only "NOT NULL" now
         if (checkNullability(properties, required.contains(columnName))) Set.empty[ColumnConstraint]
         else Set[ColumnConstraint](Nullability(NotNull))
-      Column(columnName, dataType, columnAttributes = Set(encoding), columnConstraints = constraints)
+      Column(
+        columnName,
+        dataType,
+        columnAttributes = Set(encoding),
+        columnConstraints = constraints)
     }
   }
 
@@ -198,7 +245,6 @@ object DdlGenerator {
   // List of compression encoding suggestions
   val encodingSuggestions: List[EncodingSuggestion] = List(lzoSuggestion, zstdSuggestion)
 
-
   /**
    * Takes each suggestion out of ``dataTypeSuggesions`` and decide whether
    * current properties satisfy it, then return the data type
@@ -212,18 +258,18 @@ object DdlGenerator {
    * @return some format or none if nothing suites
    */
   @tailrec private[schemaddl] def getDataType(
-      properties: Map[String, String],
-      varcharSize: Int,
-      columnName: String,
-      suggestions: List[DataTypeSuggestion] = dataTypeSuggestions)
-  : DataType = {
+    properties: Map[String, String],
+    varcharSize: Int,
+    columnName: String,
+    suggestions: List[DataTypeSuggestion] = dataTypeSuggestions): DataType = {
 
     suggestions match {
       case Nil => RedshiftVarchar(varcharSize) // Generic
-      case suggestion :: tail => suggestion(properties, columnName) match {
-        case Some(format) => format
-        case None => getDataType(properties, varcharSize, columnName, tail)
-      }
+      case suggestion :: tail =>
+        suggestion(properties, columnName) match {
+          case Some(format) => format
+          case None         => getDataType(properties, varcharSize, columnName, tail)
+        }
     }
   }
 
@@ -240,18 +286,18 @@ object DdlGenerator {
    * @return some format or none if nothing suites
    */
   @tailrec private[schemaddl] def getEncoding(
-      properties: Map[String, String],
-      dataType: DataType,
-      columnName: String,
-      suggestions: List[EncodingSuggestion] = encodingSuggestions)
-  : CompressionEncoding = {
+    properties: Map[String, String],
+    dataType: DataType,
+    columnName: String,
+    suggestions: List[EncodingSuggestion] = encodingSuggestions): CompressionEncoding = {
 
     suggestions match {
       case Nil => CompressionEncoding(ZstdEncoding) // ZSTD is default for user-generated
-      case suggestion :: tail => suggestion(properties, dataType, columnName) match {
-        case Some(encoding) => CompressionEncoding(encoding)
-        case None => getEncoding(properties, dataType, columnName, tail)
-      }
+      case suggestion :: tail =>
+        suggestion(properties, dataType, columnName) match {
+          case Some(encoding) => CompressionEncoding(encoding)
+          case None           => getEncoding(properties, dataType, columnName, tail)
+        }
     }
   }
 
@@ -266,11 +312,13 @@ object DdlGenerator {
    * @param required whether this field listed in required array
    * @return nullable or not
    */
-  private[schemaddl] def checkNullability(properties: Map[String, String], required: Boolean): Boolean = {
+  private[schemaddl] def checkNullability(
+    properties: Map[String, String],
+    required: Boolean): Boolean = {
     (properties.get("type"), properties.get("enum")) match {
-      case (Some(types), _) if types.contains("null") => true
+      case (Some(types), _) if types.contains("null")                 => true
       case (_, Some(enum)) if enum.split(",").toList.contains("null") => true
-      case _ => !required
+      case _                                                          => !required
     }
   }
 }

@@ -30,7 +30,9 @@ import org.json4s._
  * @param elems The ordered map of every primitive type in schema
  *              and it's unordered map of properties
  */
-case class FlatSchema(elems: ListMap[String, Map[String, String]], required: Set[String] = Set.empty[String])
+case class FlatSchema(
+  elems: ListMap[String, Map[String, String]],
+  required: Set[String] = Set.empty[String])
 
 /**
  * Flattens a JsonSchema into Strings representing the path to a field.
@@ -49,7 +51,9 @@ object FlatSchema {
    * @param elems map of JSON Schema keys and it's properties
    * @param required set of required keys with full dotted path
    */
-  private[schemaddl] case class SubSchema(elems: Map[String, Map[String, String]], required: Set[String])
+  private[schemaddl] case class SubSchema(
+    elems: Map[String, Map[String, String]],
+    required: Set[String])
 
   /**
    * Helper classes to extract info from JSON Schema's JValue
@@ -72,7 +76,8 @@ object FlatSchema {
    * @param properties list of all object properties with it's names
    * @param required set of fields listed in required property
    */
-  private[schemaddl] case class ObjectInfo(properties: List[JField], required: Set[String]) extends Info
+  private[schemaddl] case class ObjectInfo(properties: List[JField], required: Set[String])
+      extends Info
 
   /**
    * Helper object extracted from JSON Schema's object which should be
@@ -98,17 +103,20 @@ object FlatSchema {
           case Success(ObjectInfo(properties, required)) =>
             processProperties(properties, requiredKeys = required, requiredAccum = required) match {
               case Success(subSchema) =>
-                val elems = if (splitProduct) splitProductTypes(subSchema.elems) else subSchema.elems
+                val elems =
+                  if (splitProduct) splitProductTypes(subSchema.elems) else subSchema.elems
                 FlatSchema(getOrderedMap(elems), subSchema.required).success
               case Failure(str) => str.failure
             }
           case Success(FlattenObjectInfo) =>
             FlatSchema(getOrderedMap(Map.empty[String, Map[String, String]]), Set.empty[String]).success
           case Failure(str) => str.failure
-          case _ => ("Error: Function - 'flattenJsonSchema' - " +
-                     "JsonSchema does not begin with an 'object' & 'properties'").failure
+          case _ =>
+            ("Error: Function - 'flattenJsonSchema' - " +
+              "JsonSchema does not begin with an 'object' & 'properties'").failure
         }
-      case _ => s"Error: Function - 'flattenJsonSchema' - Invalid Schema passed to flattener".failure
+      case _ =>
+        s"Error: Function - 'flattenJsonSchema' - Invalid Schema passed to flattener".failure
     }
   }
 
@@ -123,16 +131,17 @@ object FlatSchema {
    * @param schema map of schema keys to JSON Schema properties
    * @return updated map where product types are splitted
    */
-  def splitProductTypes(schema: Map[String, Map[String, String]]): Map[String, Map[String, String]] = {
+  def splitProductTypes(
+    schema: Map[String, Map[String, String]]): Map[String, Map[String, String]] = {
     val extractedProperties: Iterable[Map[String, Map[String, String]]] = for {
       (k, v) <- schema
     } yield {
-        v.get("type") match {
-          case Some(types) if isProductType(types) =>
-            extractTypesFromProductType(types).map(t => k + "_" + t -> updateType(v, t)).toMap
-          case _ => Map(k -> v)
-        }
+      v.get("type") match {
+        case Some(types) if isProductType(types) =>
+          extractTypesFromProductType(types).map(t => k + "_" + t -> updateType(v, t)).toMap
+        case _ => Map(k -> v)
       }
+    }
     extractedProperties.reduce(_ ++ _)
   }
 
@@ -147,12 +156,11 @@ object FlatSchema {
    * @return a validated map of keys and attributes or a failure string
    */
   private[schemaddl] def processProperties(
-      propertyList: List[JField],
-      accum: Map[String, Map[String, String]] = Map(),
-      accumKey: String = "",
-      requiredKeys: Set[String] = Set.empty,
-      requiredAccum: Set[String] = Set.empty)
-  : Validation[String, SubSchema] = {
+    propertyList: List[JField],
+    accum: Map[String, Map[String, String]] = Map(),
+    accumKey: String = "",
+    requiredKeys: Set[String] = Set.empty,
+    requiredAccum: Set[String] = Set.empty): Validation[String, SubSchema] = {
 
     propertyList match {
       case x :: xs => {
@@ -160,25 +168,37 @@ object FlatSchema {
           case (key, JObject(list)) =>
             getElemInfo(list) match {
               case Success(ObjectInfo(properties, required)) =>
-                val currentLevelRequired = if (requiredAccum.contains(key)) { required } else { Set.empty[String] }
-                val keys = properties.map(_._1).filter(currentLevelRequired.contains).map(accumKey + key + "." + _)
+                val currentLevelRequired =
+                  if (requiredAccum.contains(key)) { required } else { Set.empty[String] }
+                val keys = properties
+                  .map(_._1)
+                  .filter(currentLevelRequired.contains)
+                  .map(accumKey + key + "." + _)
                 processProperties(properties, Map(), accumKey + key + ".", keys.toSet, required)
               case Success(FlattenObjectInfo) =>
                 SubSchema(Map(accumKey + key -> Map("type" -> "string")), Set.empty[String]).success
               case Success(ArrayInfo) =>
                 SubSchema(Map(accumKey + key -> Map("type" -> "array")), Set.empty[String]).success
-              case Success(_) => processAttributes(list) match {
-                case Success(attr) => SubSchema(Map(accumKey + key -> attr), Set.empty[String]).success
-                case Failure(str)  => str.failure
-              }
+              case Success(_) =>
+                processAttributes(list) match {
+                  case Success(attr) =>
+                    SubSchema(Map(accumKey + key -> attr), Set.empty[String]).success
+                  case Failure(str) => str.failure
+                }
               case Failure(str) => str.failure
             }
-          case _ => s"Error: Function - 'processProperties' - Invalid List Tuple2 Encountered".failure
+          case _ =>
+            s"Error: Function - 'processProperties' - Invalid List Tuple2 Encountered".failure
         }
 
         res match {
           case Success(goodRes) =>
-            processProperties(xs, accum ++ goodRes.elems, accumKey, requiredKeys ++ goodRes.required, requiredAccum)
+            processProperties(
+              xs,
+              accum ++ goodRes.elems,
+              accumKey,
+              requiredKeys ++ goodRes.required,
+              requiredAccum)
           case Failure(badRes) => badRes.failure
         }
       }
@@ -197,14 +217,13 @@ object FlatSchema {
    */
   @tailrec
   private[schemaddl] def processAttributes(
-      attributes: List[JField],
-      accum: Map[String, String] = Map())
-  : Validation[String, Map[String, String]] = {
+    attributes: List[JField],
+    accum: Map[String, String] = Map()): Validation[String, Map[String, String]] = {
 
     attributes match {
       case x :: xs =>
         x match {
-          case (key, JArray(value))   =>
+          case (key, JArray(value)) =>
             stringifyArray(value) match {
               case Success(strs) => processAttributes(xs, accum ++ Map(key -> strs))
               case Failure(str)  => str.failure
@@ -215,7 +234,7 @@ object FlatSchema {
           case (key, JDouble(value))  => processAttributes(xs, accum ++ Map(key -> value.toString))
           case (key, JNull)           => processAttributes(xs, accum ++ Map(key -> "null"))
           case (key, JString(value))  => processAttributes(xs, accum ++ Map(key -> value))
-          case _ => s"Error: Function - 'processAttributes' - Invalid JValue found".failure
+          case _                      => s"Error: Function - 'processAttributes' - Invalid JValue found".failure
         }
       case Nil => accum.success
     }
@@ -234,10 +253,9 @@ object FlatSchema {
    *         passed or a failure string
    */
   private[schemaddl] def stringifyArray(
-      list: List[JValue],
-      accum: String = "",
-      delim: String = ",")
-  : Validation[String, String] = {
+    list: List[JValue],
+    accum: String = "",
+    delim: String = ","): Validation[String, String] = {
 
     list match {
       case x :: xs =>
@@ -259,23 +277,26 @@ object FlatSchema {
    * @param jObject JSON object containing JSON Schema
    * @return validated list of required fields
    */
-  private[schemaddl] def getRequiredProperties(jObject: Map[String, JValue]): Validation[String, List[String]] = {
+  private[schemaddl] def getRequiredProperties(
+    jObject: Map[String, JValue]): Validation[String, List[String]] = {
     // Helper function, validates each element as string
     def JStringToString(array: List[JValue]): Validation[String, List[String]] =
       array.foldLeft(Nil.success: Validation[String, List[String]]) { (acc, str) =>
         acc match {
-          case Success(l) => str match {
-            case JString(s) => (s :: l).success
-            case _ => "required property must contain only strings".failure
-          }
+          case Success(l) =>
+            str match {
+              case JString(s) => (s :: l).success
+              case _          => "required property must contain only strings".failure
+            }
           case Failure(f) => f.failure
         }
       }
     jObject.get("required") match {
-      case Some(required) => required match {
-        case JArray(list) => JStringToString(list)
-        case _ => "required property must contain array of keys".failure
-      }
+      case Some(required) =>
+        required match {
+          case JArray(list) => JStringToString(list)
+          case _            => "required property must contain array of keys".failure
+        }
       case None => Nil.success
     }
   }
@@ -308,13 +329,14 @@ object FlatSchema {
                     }
                   case _ => FlattenObjectInfo.success
                 }
-              case "array"  => ArrayInfo.success
-              case _        => PrimitiveInfo.success // Pass back a successful empty Map for a normal entry (Should come up with something better...)
+              case "array" => ArrayInfo.success
+              case _ =>
+                PrimitiveInfo.success // Pass back a successful empty Map for a normal entry (Should come up with something better...)
             }
           case Failure(str) => str.failure
         }
       case None if objectMap.get("enum").isDefined => PrimitiveInfo.success
-      case _ => FlattenObjectInfo.success
+      case _                                       => FlattenObjectInfo.success
     }
   }
 
@@ -330,8 +352,8 @@ object FlatSchema {
   private[schemaddl] def getElemType(types: JValue): Validation[String, String] = {
     val maybeTypes = types match {
       case JString(value) => value.success
-      case JArray(list) => stringifyArray(list)
-      case _ => s"Error: Function - 'getElemType' - Type List contains invalid JValue".failure
+      case JArray(list)   => stringifyArray(list)
+      case _              => s"Error: Function - 'getElemType' - Type List contains invalid JValue".failure
     }
     maybeTypes match {
       case Success(str) =>
@@ -376,7 +398,9 @@ object FlatSchema {
    * @param currentType type to set
    * @return JSON Schema properties with updated types
    */
-  private[schemaddl] def updateType(properties: Map[String, String], currentType: String): Map[String, String] =
+  private[schemaddl] def updateType(
+    properties: Map[String, String],
+    currentType: String): Map[String, String] =
     properties.get("type") match {
       case Some(t) if isNullable(t) =>
         properties.updated("type", currentType + ",null")
@@ -393,6 +417,7 @@ object FlatSchema {
    * @return an ordered ListMap of paths that are now in
    *         alphabetical order.
    */
-  private[schemaddl] def getOrderedMap(paths: Map[String, Map[String, String]]): ListMap[String, Map[String, String]] =
-    ListMap(paths.toSeq.sortBy(_._1):_*)
+  private[schemaddl] def getOrderedMap(
+    paths: Map[String, Map[String, String]]): ListMap[String, Map[String, String]] =
+    ListMap(paths.toSeq.sortBy(_._1): _*)
 }

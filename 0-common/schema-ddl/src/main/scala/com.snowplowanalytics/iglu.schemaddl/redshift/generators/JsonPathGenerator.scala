@@ -63,11 +63,12 @@ object JsonPathGenerator {
    */
   def getJsonPathsFile(columns: List[Column], rawMode: Boolean = false): String = {
     val columnNames: List[String] =
-      if (rawMode) { columns.map(JsonPathPrefix.Data + _.columnName) }    // everything is data in raw mode
-      else {                                                              // add schema and hierarchy otherwise
-        val dataColumns = columns.filterNot(selfDescSchemaColumns.contains(_))
-                                 .filterNot(parentageColumns.contains(_))
-                                 .map(_.columnName)
+      if (rawMode) { columns.map(JsonPathPrefix.Data + _.columnName) } // everything is data in raw mode
+      else { // add schema and hierarchy otherwise
+        val dataColumns = columns
+          .filterNot(selfDescSchemaColumns.contains(_))
+          .filterNot(parentageColumns.contains(_))
+          .map(_.columnName)
 
         val schemaFieldList    = JsonPathSchemaFields.map(JsonPathPrefix.Schema + _)
         val hierarchyFieldList = JsonPathHierarchyFields.map(JsonPathPrefix.Hierarchy + _)

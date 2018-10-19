@@ -21,7 +21,8 @@ import org.specs2.Specification
 
 import json4s.implicits._
 
-class NumberSpec extends Specification { def is = s2"""
+class NumberSpec extends Specification {
+  def is = s2"""
   Check JSON Schema number-specific properties
     correctly transform big BigInt to BigDecimal $e1
     correctly transform small BigInt to BigDecimal $e2
@@ -30,30 +31,29 @@ class NumberSpec extends Specification { def is = s2"""
   """
 
   def e1 = {
-    val json = parse(
-      """
+    val json = parse("""
         |{
         |  "maximum": 9223372036854775807
         |}
       """.stripMargin)
 
-    Schema.parse(json).flatMap(_.maximum).map(_.getAsDecimal) must beSome(BigDecimal(9223372036854775807L))
+    Schema.parse(json).flatMap(_.maximum).map(_.getAsDecimal) must beSome(
+      BigDecimal(9223372036854775807L))
   }
 
   def e2 = {
-    val json = parse(
-      """
+    val json = parse("""
         |{
         |  "minimum": -9223372036854775806
         |}
       """.stripMargin)
 
-    Schema.parse(json).flatMap(_.minimum).map(_.getAsDecimal) must beSome(BigDecimal(-9223372036854775806L))
+    Schema.parse(json).flatMap(_.minimum).map(_.getAsDecimal) must beSome(
+      BigDecimal(-9223372036854775806L))
   }
 
   def e3 = {
-    val json = parse(
-      """
+    val json = parse("""
         |{
         |  "minimum": 25,
         |  "maximum": 25.0
@@ -67,8 +67,7 @@ class NumberSpec extends Specification { def is = s2"""
   }
 
   def e4 = {
-    val json = parse(
-      """
+    val json = parse("""
         |{
         |  "minimum": null
         |}

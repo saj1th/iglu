@@ -14,7 +14,7 @@ package com.snowplowanalytics.iglu.schemaddl
 package jsonschema
 
 // Shadow Java Enum
-import java.lang.{ Enum => _}
+import java.lang.{Enum => _}
 
 // This library
 import ArrayProperties._
@@ -28,41 +28,56 @@ import CommonProperties._
  */
 case class Schema(
   // integer and number
-  multipleOf:           Option[MultipleOf]           = None,
-  minimum:              Option[Minimum]              = None,
-  maximum:              Option[Maximum]              = None,
-
+  multipleOf: Option[MultipleOf] = None,
+  minimum: Option[Minimum] = None,
+  maximum: Option[Maximum] = None,
   // string
-  maxLength:            Option[MaxLength]            = None,
-  minLength:            Option[MinLength]            = None,
-  pattern:              Option[Pattern]              = None,
-  format:               Option[Format]               = None,
-
+  maxLength: Option[MaxLength] = None,
+  minLength: Option[MinLength] = None,
+  pattern: Option[Pattern] = None,
+  format: Option[Format] = None,
   // array
-  items:                Option[Items]                = None,
-  additionalItems:      Option[AdditionalItems]      = None,
-  minItems:             Option[MinItems]             = None,
-  maxItems:             Option[MaxItems]             = None,
-
+  items: Option[Items] = None,
+  additionalItems: Option[AdditionalItems] = None,
+  minItems: Option[MinItems] = None,
+  maxItems: Option[MaxItems] = None,
   // object
-  properties:           Option[Properties]           = None,
+  properties: Option[Properties] = None,
   additionalProperties: Option[AdditionalProperties] = None,
-  required:             Option[Required]             = None,
-  patternProperties:    Option[PatternProperties]    = None,
-
+  required: Option[Required] = None,
+  patternProperties: Option[PatternProperties] = None,
   // common
-  `type`:               Option[Type]                 = None,
-  enum:                 Option[Enum]                 = None,
-  oneOf:                Option[OneOf]                = None,
-  description:          Option[Description]          = None
+  `type`: Option[Type] = None,
+  enum: Option[Enum] = None,
+  oneOf: Option[OneOf] = None,
+  description: Option[Description] = None
 ) {
 
-  private[iglu] val allProperties = List(multipleOf, minimum, maximum, maxLength, minLength,
-    pattern, format, items, additionalItems, minItems, maxItems, properties,
-    additionalProperties, required, patternProperties, `type`, enum, oneOf, description)
+  private[iglu] val allProperties = List(
+    multipleOf,
+    minimum,
+    maximum,
+    maxLength,
+    minLength,
+    pattern,
+    format,
+    items,
+    additionalItems,
+    minItems,
+    maxItems,
+    properties,
+    additionalProperties,
+    required,
+    patternProperties,
+    `type`,
+    enum,
+    oneOf,
+    description
+  )
 }
 
 object Schema {
+
   /**
    * Parse arbitrary JSON AST as Schema class
    *

@@ -19,7 +19,6 @@ object ObjectProperties {
    */
   private[iglu] sealed trait ObjectProperty
 
-
   /**
    * Type representing keyword `properties`
    *
@@ -28,7 +27,6 @@ object ObjectProperties {
   case class Properties(value: Map[String, Schema]) extends JsonSchemaProperty with ObjectProperty {
     def keyName = "properties"
   }
-
 
   /**
    * ADT representing value for `additionalProperties` keyword
@@ -50,13 +48,12 @@ object ObjectProperties {
    */
   case class AdditionalPropertiesSchema(value: Schema) extends AdditionalProperties
 
-
   /**
    * ADT representing holder for `required` keyword
    *
    * @see http://json-schema.org/latest/json-schema-validation.html#anchor61
    */
-  case class Required(value: List[String]) extends JsonSchemaProperty with ObjectProperty  {
+  case class Required(value: List[String]) extends JsonSchemaProperty with ObjectProperty {
     def keyName = "required"
   }
 
@@ -65,7 +62,9 @@ object ObjectProperties {
    *
    * @see http://json-schema.org/latest/json-schema-validation.html#anchor64
    */
-  case class PatternProperties(value: Map[String, Schema]) extends JsonSchemaProperty with ObjectProperty {
+  case class PatternProperties(value: Map[String, Schema])
+      extends JsonSchemaProperty
+      with ObjectProperty {
     def keyName = "patternProperties"
   }
 }

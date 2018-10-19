@@ -19,11 +19,11 @@ import org.json4s.jackson.JsonMethods.parse
 // specs2
 import org.specs2.Specification
 
-
 import json4s.implicits._
 import StringProperties._
 
-class CommonSpec extends Specification { def is = s2"""
+class CommonSpec extends Specification {
+  def is = s2"""
   Check JSON Schema common properties
     parse string-typed Schema $e1
     parse union-typed Schema $e2
@@ -33,8 +33,7 @@ class CommonSpec extends Specification { def is = s2"""
 
   def e1 = {
 
-    val schema = parse(
-      """
+    val schema = parse("""
         |{
         |  "type": "string"
         |}
@@ -43,23 +42,22 @@ class CommonSpec extends Specification { def is = s2"""
     Schema.parse(schema) must beSome(Schema(`type` = Some(CommonProperties.String)))
   }
 
-
   def e2 = {
 
-    val schema = parse(
-      """
+    val schema = parse("""
         |{
         |  "type": ["string", "null"]
         |}
       """.stripMargin)
 
-    Schema.parse(schema) must beSome(Schema(`type` = Some(CommonProperties.Product(List(CommonProperties.String, CommonProperties.Null)))))
+    Schema.parse(schema) must beSome(
+      Schema(`type` =
+        Some(CommonProperties.Product(List(CommonProperties.String, CommonProperties.Null)))))
   }
 
   def e3 = {
 
-    val schema = parse(
-      """
+    val schema = parse("""
         |{
         |  "type": ["unknown", "string"],
         |  "format": "ipv4"
@@ -68,9 +66,9 @@ class CommonSpec extends Specification { def is = s2"""
 
     Schema.parse(schema) must beSome(Schema(format = Some(Ipv4Format)))
   }
-  
+
   def e4 = {
-    
+
     val schema = parse(
       """
         |{

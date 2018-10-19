@@ -13,7 +13,8 @@
 package com.snowplowanalytics.iglu.schemaddl
 package bigquery
 
-class FieldSpec extends org.specs2.Specification { def is = s2"""
+class FieldSpec extends org.specs2.Specification {
+  def is = s2"""
   build generates field for object with string and object $e1
   build recognizes numeric properties $e2
   build generates repeated field for array $e3
@@ -24,8 +25,7 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
   """
 
   def e1 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |{"type": "object",
         |"properties": {
         |  "stringKey": {
@@ -47,16 +47,20 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
 
     val expected = Field(
       "foo",
-      Type.Record(List(
-        Field("objectKey",
-          Type.Record(List(
-            Field("nestedKey3", Type.Boolean, Mode.Required),
-            Field("nestedKey1", Type.String, Mode.Nullable),
-            Field("nestedKey2", Type.Integer, Mode.Nullable)
-          )),
-          Mode.Nullable
-        ),
-        Field("stringKey", Type.String,Mode.Nullable))),
+      Type.Record(
+        List(
+          Field(
+            "objectKey",
+            Type.Record(
+              List(
+                Field("nestedKey3", Type.Boolean, Mode.Required),
+                Field("nestedKey1", Type.String, Mode.Nullable),
+                Field("nestedKey2", Type.Integer, Mode.Nullable)
+              )),
+            Mode.Nullable
+          ),
+          Field("stringKey", Type.String, Mode.Nullable)
+        )),
       Mode.Nullable
     )
 
@@ -64,8 +68,7 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
   }
 
   def e2 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |{"type": "object",
         |"properties": {
         |  "numeric1": {"type": "number" },
@@ -79,12 +82,13 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
 
     val expected = Field(
       "foo",
-      Type.Record(List(
-        Field("numeric2", Type.Integer, Mode.Required),
-        Field("numeric1", Type.Float, Mode.Nullable),
-        Field("numeric3", Type.Float, Mode.Nullable),
-        Field("numeric4", Type.Float, Mode.Nullable)
-      )),
+      Type.Record(
+        List(
+          Field("numeric2", Type.Integer, Mode.Required),
+          Field("numeric1", Type.Float, Mode.Nullable),
+          Field("numeric3", Type.Float, Mode.Nullable),
+          Field("numeric4", Type.Float, Mode.Nullable)
+        )),
       Mode.Nullable
     )
 
@@ -92,8 +96,7 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
   }
 
   def e3 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |{"type": "array",
         |"items": {
         |  "type": "object",
@@ -107,10 +110,11 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
 
     val expected = Field(
       "foo",
-      Type.Record(List(
-        Field("bar", Type.Integer, Mode.Nullable),
-        Field("foo", Type.String, Mode.Nullable)
-      )),
+      Type.Record(
+        List(
+          Field("bar", Type.Integer, Mode.Nullable),
+          Field("foo", Type.String, Mode.Nullable)
+        )),
       Mode.Repeated
     )
 
@@ -118,8 +122,7 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
   }
 
   def e4 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |{"type": "array",
         |"items": {
         |  "type": ["object", "null"],
@@ -133,10 +136,11 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
 
     val expected = Field(
       "foo",
-      Type.Record(List(
-        Field("bar", Type.Integer, Mode.Nullable),
-        Field("foo", Type.String, Mode.Nullable)
-      )),
+      Type.Record(
+        List(
+          Field("bar", Type.Integer, Mode.Nullable),
+          Field("foo", Type.String, Mode.Nullable)
+        )),
       Mode.Repeated
     )
 
@@ -144,8 +148,7 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
   }
 
   def e5 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -154,16 +157,19 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
         |}
       """.stripMargin)
 
-    val expected = Field("foo",Type.Record(List(
-      Field("union",Type.String,Mode.Nullable)
-    )),Mode.Nullable)
+    val expected = Field(
+      "foo",
+      Type.Record(
+        List(
+          Field("union", Type.String, Mode.Nullable)
+        )),
+      Mode.Nullable)
 
     Field.build("foo", input, false) must beEqualTo(expected)
   }
 
   def e6 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |{
         |  "type": "object",
         |  "properties": {
@@ -173,16 +179,19 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
         |}
       """.stripMargin)
 
-    val expected = Field("foo",Type.Record(List(
-      Field("union",Type.String,Mode.Nullable)
-    )),Mode.Nullable)
+    val expected = Field(
+      "foo",
+      Type.Record(
+        List(
+          Field("union", Type.String, Mode.Nullable)
+        )),
+      Mode.Nullable)
 
     Field.build("foo", input, false) must beEqualTo(expected)
   }
 
   def e7 = {
-    val input = SpecHelpers.parseSchema(
-      """
+    val input = SpecHelpers.parseSchema("""
         |  {
         |    "type": "object",
         |    "properties": {
@@ -194,7 +203,8 @@ class FieldSpec extends org.specs2.Specification { def is = s2"""
         |  }
       """.stripMargin)
 
-    val expected = Field("arrayTest",Type.Record(List(Field("imp",Type.String,Mode.Repeated))),Mode.Required)
+    val expected =
+      Field("arrayTest", Type.Record(List(Field("imp", Type.String, Mode.Repeated))), Mode.Required)
     Field.build("arrayTest", input, true) must beEqualTo(expected)
   }
 }

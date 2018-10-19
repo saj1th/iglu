@@ -49,7 +49,7 @@ case object RedshiftDouble extends DataType {
 case class RedshiftDecimal(precision: Option[Int], scale: Option[Int]) extends DataType {
   def toDdl = (precision, scale) match {
     case (Some(p), Some(s)) => s"DECIMAL ($p, $s)"
-    case _ => "DECIMAL"
+    case _                  => "DECIMAL"
   }
 }
 
@@ -75,4 +75,3 @@ case class RedshiftChar(size: Int) extends DataType {
 case class ProductType(override val warnings: List[String]) extends DataType {
   def toDdl = "VARCHAR(4096)"
 }
-

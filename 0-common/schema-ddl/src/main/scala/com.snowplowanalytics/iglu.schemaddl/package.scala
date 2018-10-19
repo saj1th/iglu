@@ -22,9 +22,10 @@ import scalaz._
 import org.json4s.JValue
 
 // Iglu Core
-import core.{ SchemaMap, SelfDescribingSchema }
+import core.{SchemaMap, SelfDescribingSchema}
 
 package object schemaddl {
+
   /**
    * List of Schema properties
    * First-level key is arbitrary property (like id, name etc)

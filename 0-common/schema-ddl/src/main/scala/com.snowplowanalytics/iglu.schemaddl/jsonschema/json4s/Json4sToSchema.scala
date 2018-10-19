@@ -37,4 +37,3 @@ trait Json4sToSchema {
       }
   }
 }
-

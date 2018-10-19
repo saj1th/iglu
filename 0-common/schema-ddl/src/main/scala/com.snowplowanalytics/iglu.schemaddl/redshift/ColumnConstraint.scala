@@ -21,18 +21,17 @@ package com.snowplowanalytics.iglu.schemaddl.redshift
 sealed trait ColumnConstraint extends Ddl
 
 sealed trait NullabilityValue extends Ddl
-case object Null extends NullabilityValue { def toDdl = "NULL" }
-case object NotNull extends NullabilityValue { def toDdl = "NOT NULL" }
+case object Null              extends NullabilityValue { def toDdl = "NULL" }
+case object NotNull           extends NullabilityValue { def toDdl = "NOT NULL" }
 
 case class Nullability(value: NullabilityValue) extends ColumnConstraint {
   def toDdl = value.toDdl
 }
 
 sealed trait KeyConstraintValue extends Ddl
-case object Unique extends KeyConstraintValue { def toDdl = "UNIQUE" }
-case object PrimaryKey extends KeyConstraintValue { def toDdl = "PRIMARY KEY" }
+case object Unique              extends KeyConstraintValue { def toDdl = "UNIQUE" }
+case object PrimaryKey          extends KeyConstraintValue { def toDdl = "PRIMARY KEY" }
 
 case class KeyConstaint(value: KeyConstraintValue) extends ColumnConstraint {
   def toDdl = value.toDdl
 }
-

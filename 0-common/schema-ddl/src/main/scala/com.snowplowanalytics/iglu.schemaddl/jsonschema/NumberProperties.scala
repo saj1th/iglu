@@ -28,7 +28,7 @@ object NumberProperties {
     def keyName = "multipleOf"
   }
   case class NumberMultipleOf(value: BigDecimal) extends MultipleOf
-  case class IntegerMultipleOf(value: BigInt) extends MultipleOf
+  case class IntegerMultipleOf(value: BigInt)    extends MultipleOf
 
   /**
    * AST representing keyword `minimum`
@@ -73,5 +73,3 @@ object NumberProperties {
   }
 
 }
-
-

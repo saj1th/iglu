@@ -27,7 +27,7 @@ object ArrayProperties {
   sealed trait Items extends JsonSchemaProperty with ArrayProperty {
     def keyName = "items"
   }
-  case class ListItems(value: Schema) extends Items
+  case class ListItems(value: Schema)        extends Items
   case class TupleItems(value: List[Schema]) extends Items
 
   /**
@@ -39,14 +39,13 @@ object ArrayProperties {
     def keyName = "additionalItems"
   }
   case class AdditionalItemsAllowed(value: Boolean) extends AdditionalItems
-  case class AdditionalItemsSchema(value: Schema) extends AdditionalItems
+  case class AdditionalItemsSchema(value: Schema)   extends AdditionalItems
 
   /**
    * Container representing value for `maxItems` keyword
    *
    * @see http://json-schema.org/latest/json-schema-validation.html#anchor42
    */
-
   case class MaxItems(value: BigInt) extends JsonSchemaProperty with ArrayProperty {
     def keyName = "maxItems"
   }
@@ -60,5 +59,3 @@ object ArrayProperties {
     def keyName = "minItems"
   }
 }
-
-

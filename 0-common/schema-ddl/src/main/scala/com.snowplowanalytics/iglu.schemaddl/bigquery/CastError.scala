@@ -17,11 +17,13 @@ import io.circe._
 sealed trait CastError extends Product with Serializable
 
 object CastError {
+
   /** Value doesn't match expected type */
   final case class WrongType(value: Json, expected: Type) extends CastError
+
   /** Field should be repeatable, but value is not an JSON Array */
   final case class NotAnArray(value: Json, expected: Type) extends CastError
+
   /** Value is required by Schema, but missing in JSON object */
   final case class MissingInValue(key: String, value: Json) extends CastError
 }
-
